@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 通过传感器和执行器与物理世界交互
 
 ![本课的 sketchnote 概述](../../../../sketchnotes/lesson-3.jpg)
