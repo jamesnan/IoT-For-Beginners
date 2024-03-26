@@ -8,7 +8,7 @@
 
 [![第 4 课：将设备连接到互联网](https://img.youtube.com/vi/O4dd172mZhs/0.jpg)](https://youtu.be/O4dd172mZhs)
 
-[![第 4 课：将您的设备连接到互联网 - 办公时间](https://img.youtube.com/vi/j-cVCzRDE2Q/0.jpg)](https://youtu.be/j-cVCzRDE2Q）
+[![第 4 课：将您的设备连接到互联网 - 办公时间](https://img.youtube.com/vi/j-cVCzRDE2Q/0.jpg)](https://youtu.be/j-cVCzRDE2Q)
 
 > 🎥 点击上图观看视频
 
