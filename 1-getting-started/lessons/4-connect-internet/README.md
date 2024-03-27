@@ -1,455 +1,437 @@
-# Connect your device to the Internet
+# Migrate your plant to the cloud
 
-![A sketchnote overview of this lesson](../../../sketchnotes/lesson-4.jpg)
+![A sketchnote overview of this lesson](../../../sketchnotes/lesson-8.jpg)
 
 > Sketchnote by [Nitya Narasimhan](https://github.com/nitya). Click the image for a larger version.
 
-This lesson was taught as part of the [Hello IoT series](https://youtube.com/playlist?list=PLmsFUfdnGr3xRts0TIwyaHyQuHaNQcb6-) from the [Microsoft Reactor](https://developer.microsoft.com/reactor/?WT.mc_id=academic-17441-jabenn). The lesson was taught as 2 videos - a 1 hour lesson, and a 1 hour office hour diving deeper into parts of the lesson and answering questions.
+This lesson was taught as part of the [IoT for Beginners Project 2 - Digital Agriculture series](https://youtube.com/playlist?list=PLmsFUfdnGr3yCutmcVg6eAUEfsGiFXgcx) from the [Microsoft Reactor](https://developer.microsoft.com/reactor/?WT.mc_id=academic-17441-jabenn).
 
-[![Lesson 4: Connect your Device to the Internet](https://img.youtube.com/vi/O4dd172mZhs/0.jpg)](https://youtu.be/O4dd172mZhs)
-
-[![Lesson 4: Connect your Device to the Internet - Office hours](https://img.youtube.com/vi/j-cVCzRDE2Q/0.jpg)](https://youtu.be/j-cVCzRDE2Q)
-
-> 🎥 Click the images above to watch the videos
+[![Connect your device to the cloud with Azure IoT Hub](https://img.youtube.com/vi/bNxjopXkhvk/0.jpg)](https://youtu.be/bNxjopXkhvk)
 
 ## Pre-lecture quiz
 
-[Pre-lecture quiz](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/7)
+[Pre-lecture quiz](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/15)
 
 ## Introduction
 
-The **I** in IoT stands for **Internet** - the cloud connectivity and services that enable a lot of the features of IoT devices, from gathering measurements from the sensors connected to the device, to sending messages to control the actuators. IoT devices typically connect to a single cloud IoT service using a standard communication protocol, and that service is connected to the rest of your IoT application, from AI services to make smart decisions around your data, to web apps for control or reporting.
+In the last lesson, you learned how to connect your plant to an MQTT broker and controlled a relay from some server code running locally. This forms the core of the kind of internet-connected automated watering system that is used from individual plants at home up to commercial farms.
 
-> 🎓 Data gathered from sensors and sent to the cloud is called telemetry.
-
-IoT devices can receive messages from the cloud. Often the messages contain commands - that is instructions to perform an action either internally (such as reboot or update firmware), or using an actuator (such as turning on a light).
-
-This lesson introduces some of the communication protocols IoT devices can use to connect to the cloud, and the types of data they might send or receive. You will also get hands-on with them both, adding internet control to your nightlight, moving the LED control logic to 'server' code running locally.
+The IoT device communicated with a public MQTT broker as a way to demonstrate the principles, but this is not the most reliable or secure way. In this lesson you will learn about the cloud, and the IoT capabilities provided by public cloud services. You will also learn how to migrate your plant to one of these cloud services from the public MQTT broker.
 
 In this lesson we'll cover:
 
-* [Communication protocols](#communication-protocols)
-* [Message Queueing Telemetry Transport (MQTT)](#message-queueing-telemetry-transport-mqtt)
-* [Telemetry](#telemetry)
-* [Commands](#commands)
+* [What is the cloud?](#what-is-the-cloud)
+* [Create a cloud subscription](#create-a-cloud-subscription)
+* [Cloud IoT services](#cloud-iot-services)
+* [Create an IoT service in the cloud](#create-an-iot-service-in-the-cloud)
+* [Communicate with IoT Hub](#communicate-with-iot-hub)
+* [Connect your device to the IoT service](#connect-your-device-to-the-iot-service)
 
-## Communication protocols
+## What is the cloud?
 
-There are a number of popular communication protocols used by IoT devices to communicate with the Internet. The most popular are based around publish/subscribe messaging via some kind of broker. The IoT devices connect to the broker and publish telemetry and subscribe to commands. The cloud services also connect to the broker and subscribe to all the telemetry messages and publish commands either to specific devices, or to groups of devices.
+Before the cloud, when a company wanted to provide services to their employees (such as databases or file storage), or to the public (such as websites), they would build and run a data center. This ranged from a room with a small number of computers, to a building with many computers. The company would manage everything, including:
 
-![IoT devices connect to a broker and publish telemetry and subscribe to commands. Cloud services connect to the broker and subscribe to all telemetry and send commands to specific devices.](../../../images/pub-sub.png)
+* Buying computers
+* Hardware maintenance
+* Power and cooling
+* Networking
+* Security, including securing the building and securing the software on the computers
+* Software installation and updates
 
-MQTT is the most popular communication protocol for IoT devices and is covered in this lesson. Others protocols include AMQP and HTTP/HTTPS.
+This could be very expensive, require a wide range of skilled employees, and be very slow to change when needed. For example, if an online store needed to plan for a busy holiday season, they would need to plan months in advance to buy more hardware, configure it, install it and install the software to run their sales process. After the holiday season was over and sales dropped back down, they would be left with computers they've paid for sitting idle till the next busy season.
 
-## Message Queueing Telemetry Transport (MQTT)
+✅ Do you think this would allow companies to move quickly? If an online clothing retailer suddenly got popular due to a celebrity being seen in their clothes, would they be able to increase their computing power quickly enough to support the sudden influx of orders?
 
-[MQTT](http://mqtt.org) is a lightweight, open standard messaging protocol that can send messages between devices. It was designed in 1999 to monitor oil pipelines, before being released as an open standard 15 years later by IBM.
+### Someone else's computer
 
-MQTT has a single broker and multiple clients. All clients connect to the broker, and the broker routes messages to the relevant clients. Messages are routed using named topics, rather than being sent directly to an individual client. A client can publish to a topic, and any clients that subscribe to that topic will receive the message.
+The cloud is often jokingly referred to as 'someone else's computer'. The initial idea was simple - instead of buying computers, you rent someone else's computer. Someone else, a cloud computing provider, would manage huge data centers. They would be responsible for buying and installing the hardware, managing power and cooling, networking, building security, hardware and software updates, everything. As a customer, you would rent the computers you need, renting more as demand spikes, then reducing the number you rent if demand drops. These cloud data centers are all around the world.
 
-![IoT device publishing telemetry on the /telemetry topic, and the cloud service subscribing to that topic](../../../images/mqtt.png)
+![A Microsoft cloud data center](../../../images/azure-region-existing.png)
+![A Microsoft cloud data center planned expansion](../../../images/azure-region-planned-expansion.png)
 
-✅ Do some research. If you have a lot of IoT devices, how can you ensure your MQTT broker can handle all the messages?
+These data centers can be multiple square kilometers in size. The images above were taken a few years ago at a Microsoft cloud data center, and show the initial size, along with a planned expansion. The area cleared for the expansion is over 5 square kilometers.
 
-### Connect your IoT device to MQTT
+> 💁 These data centers require such large amounts of power that some have their own power stations. Because of their size and the level of investment from the cloud providers, they are usually very environmentally friendly. They are more efficient than huge numbers of small data centers, they run mostly on renewable energy, and cloud providers work hard to reduce waste, cut water usage, and replant forests to make up for those cut down to provide space to build data centers. You can read more about how one cloud provider is working on sustainability on the [Azure sustainability site](https://azure.microsoft.com/global-infrastructure/sustainability/?WT.mc_id=academic-17441-jabenn).
 
-The first part of adding Internet control to your nightlight is connecting it to an MQTT broker.
+✅ Do some research: Read up on the major clouds such as [Azure from Microsoft](https://azure.microsoft.com/?WT.mc_id=academic-17441-jabenn) or [GCP from Google](https://cloud.google.com). How many data centers do they have, and where are they in the world?
 
-#### Task
+Using the cloud keeps costs down for companies, and allows them to focus on what they do best, leaving the cloud computing expertise in the hands of the provider. Companies no longer need to rent or buy data center space, pay different providers for connectivity and power, or employ experts. Instead, they can pay one monthly bill to the cloud provider to have everything taken care off.
 
-Connect your device to an MQTT broker.
+The cloud provider can then use economies of scale to drive costs down, buying computers in bulk at lower costs, investing in tooling to reduce their workload for maintenance, even designing and building their own hardware to improve their cloud offering.
 
-In this part of the lesson, you will connect your IoT nightlight to the internet to allow it to be remotely controlled. Later in this lesson, your IoT device will send a telemetry message over MQTT to a public MQTT broker with the light level, where it will be picked up by some server code that you will write. This code will check the light level and send a command message back to the device telling it to turn the LED on or off.
+### Microsoft Azure
 
-The real-world use case for such a setup could be to gather data from multiple light sensors before deciding to turn on lights, in a location that has a lot of lights, such as a stadium. This could stop the lights from being turned on if only one sensor was covered by clouds or a bird, but the other sensors detected enough light.
+Azure is the developer cloud from Microsoft, and this is the cloud you will be using for these lessons. The video below gives a short overview of Azure:
 
-✅ What other situations would require data from multiple sensors to be evaluated before sending commands?
+[![Overview of Azure video](../../../images/what-is-azure-video-thumbnail.png)](https://www.microsoft.com/videoplayer/embed/RE4Ibng?WT.mc_id=academic-17441-jabenn)
 
-Rather than dealing with the complexities of setting up an MQTT broker as part of this assignment, you can use a public test server that runs [Eclipse Mosquitto](https://www.mosquitto.org), an open-source MQTT broker. This test broker is publicly available at [test.mosquitto.org](https://test.mosquitto.org), and doesn't require an account to be set up, making it a great tool for testing MQTT clients and servers.
+## Create a cloud subscription
 
-> 💁 This test broker is public and not secure. Anyone could be listening to what you publish, so it should not be used with any data that needs to be kept private
+To use services in the cloud, you will need to sign up for a subscription with a cloud provider. For this lesson, you will be signing up for a Microsoft Azure subscription. If you already have an Azure subscription you can skip this task. The subscription details described here are correct at the time of writing, but may change.
 
-![A flow chart of the assignment showing light levels being read and checked, and the LED begin controlled](../../../images/assignment-1-internet-flow.png)
+> 💁 If you are accessing these lessons through your school, you may already have an Azure subscription available to you. Check with your teacher.
 
-Follow the relevant step below to connect your device to the MQTT broker:
+There are two different types of free Azure subscription you can sign up for:
 
-* [Arduino - Wio Terminal](wio-terminal-mqtt.md)
-* [Single-board computer - Raspberry Pi/Virtual IoT device](single-board-computer-mqtt.md)
+* **Azure for Students** - This is a subscription designed for students 18+. You don't need a credit card to sign up, and you use your school email address to validate that you are a student. When you sign up you get US$100 to spend on cloud resources, along with free services including a free version of an IoT service. This lasts 12 months, and you can renew every year that you remain a student.
 
-### A deeper dive into MQTT
+* **Azure free subscription** - This is a subscription for anyone who is not a student. You will need a credit card to sign up to for the subscription, but your card will not be billed, this is just used to verify you are a real human, not a bot. You get $200 of credit to use in the first 30 days on any service, along with free tiers of Azure services. Once your credit has been used up, your card will not be charged unless you convert to a pay as you go subscription.
 
-Topics can have a hierarchy, and clients can subscribe to different levels of the hierarchy using wildcards. For example, you can send temperature telemetry messages to the `/telemetry/temperature` topic and humidity messages to the `/telemetry/humidity` topic, then in your cloud app subscribe to the `/telemetry/*` topic to receive both the temperature and humidity telemetry messages.
+> 💁 Microsoft does offer an Azure for Students Starter subscription for students under 18, but at the time of writing this doesn't support any IoT services.
 
-Messages can be sent with a quality of service (QoS), which determines the guarantee of the message being received.
+### Task - sign up for a free cloud subscription
 
-* At most once - the message is sent only once and the client and broker take no additional steps to acknowledge delivery (fire and forget).
-* At least once - the message is re-tried by the sender multiple times until acknowledgement is received (acknowledged delivery).
-* Exactly once - the sender and receiver engage in a two-level handshake to ensure only one copy of the message is received (assured delivery).
+If you are a student aged 18+, then you can sign up for an Azure for Students subscription. You will need to validate with a school email address. You can do this in one of two ways:
 
-✅ What situations might require an assured delivery message over a fire and forget message?
+* Sign up for a GitHub student developer pack at [education.github.com/pack](https://education.github.com/pack). This gives you access to a range of tools and offers, including GitHub and Microsoft Azure. Once you sign up for the developer pack, you can then activate the Azure for Students offer.
 
-Although the name is Message Queueing (initials in MQTT), it doesn't actually support message queues. This means that if a client disconnects, then reconnects it won't receive messages sent during the disconnection, except for those messages that it had already started to process using the QoS process. Messages can have a retained flag set on them. If this is set, the MQTT broker will store the last message sent on a topic with this flag, and send this to any clients who later subscribe to the topic. This way, the clients will always get the latest message.
+* Sign up directly for an Azure for Students account at [azure.microsoft.com/free/students](https://azure.microsoft.com/free/students/?WT.mc_id=academic-17441-jabenn).
 
-MQTT also supports a keep alive function that checks if the connection is still alive during long gaps between messages.
+> ⚠️ If your school email address is not recognized, raise an [issue in this repo](https://github.com/Microsoft/IoT-For-Beginners/issues) and we'll see if it can be added to the Azure for Students allow list.
 
-> 🦟 [Mosquitto from the Eclipse Foundation](https://mosquitto.org) has a free MQTT broker you can run yourself to experiment with MQTT, along with a public MQTT broker you can use to test your code, hosted at [test.mosquitto.org](https://test.mosquitto.org).
+If you are not a student, or you don't have a valid school email address, then you can sign up for an Azure Free subscription.
 
-MQTT connections can be public and open, or encrypted and secured using usernames and passwords, or certificates.
+* Sign up for an Azure Free Subscription at [azure.microsoft.com/free](https://azure.microsoft.com/free/?WT.mc_id=academic-17441-jabenn)
 
-> 💁 MQTT communicates over TCP/IP, the same underlying network protocol as HTTP, but on a different port. You can also use MQTT over websockets to communicate with web apps running in a browser, or in situations where firewalls or other networking rules block standard MQTT connections.
+## Cloud IoT services
 
-## Telemetry
+The public test MQTT broker you have been using is a great tool when learning, but has a number of drawbacks as a tool to use in a commercial setting:
 
-The word telemetry is derived from Greek roots meaning to measure remotely. Telemetry is the act of gathering data from sensors and sending it to the cloud.
+* Reliability - it's a free service with no guarantees, and can be turned off at any time
+* Security - it is public, so anyone could listen to your telemetry or send commands to control your hardware
+* Performance - it is designed for only a few test messages, so wouldn't cope with a large amount of messages being sent
+* Discovery - there is no way to know what devices are connected
 
-> 💁 One of the earliest telemetry devices was invented in France in 1874 and sent real-time weather and snow depths from Mont Blanc to Paris. It used physical wires as wireless technologies were not available at the time.
+IoT services in the cloud solve these problems. They are maintained by large cloud providers who invest heavily in reliability and are on hand to fix any issues that might arise. They have security baked-in to stop hackers reading your data or sending rogue commands. They are also high performance, being able to handle many millions of messages every day, taking advantage of the cloud to scale as needed.
 
-Let's look back at the example of the smart thermostat from Lesson 1.
+> 💁 Although you pay for these upsides with a monthly fee, most cloud providers offer a free version of their IoT service with a limited amount of messages per day or devices that can connect. This free version is usually more than enough for a developer to learn about the service. In this lesson you will be using a free version.
 
-![An Internet connected thermostat using multiple room sensors](../../../images/telemetry.png)
+IoT devices connect to a cloud service either using a device SDK (a library that provides code to work with the features of the service), or directly via a communication protocol such as MQTT or HTTP. The device SDK is usually the easiest route to take as it handles everything for you, such as knowing what topics to publish or subscribe to, and how to handle security.
 
-The thermostat has temperature sensors to gather telemetry. It would most likely have one temperature sensor built in, and it might connect to multiple external temperature sensors over a wireless protocol such as [Bluetooth Low Energy](https://wikipedia.org/wiki/Bluetooth_Low_Energy) (BLE).
+![Devices connect to a service using a device SDK. Server code also connects to the service via an SDK](../../../images/iot-service-connectivity.png)
 
-An example of the telemetry data it would send could be:
+Your device then communicates with other parts of your application over this service - similar to how you sent telemetry and received commands over MQTT. This is usually using a service SDK or a similar library. Messages come from your device to the service where other components of your application can then read them, and messages can then be sent back to your device.
 
-| Name | Value | Description |
-| ---- | ----- | ----------- |
-| `thermostat_temperature` | 18°C | The temperature measured by the thermostat's built-in temperature sensor |
-| `livingroom_temperature` | 19°C | The temperature measured by a remote temperature sensor that has been named `livingroom` to identify the room it is in |
-| `bedroom_temperature` | 21°C | The temperature measured by a remote temperature sensor that has been named `bedroom` to identify the room it is in |
+![Devices without a valid secret key cannot connect to the IoT service](../../../images/iot-service-allowed-denied-connection.png)
 
-The cloud service can then use this telemetry data to make decisions around what commands to send to control the heating.
+These services implement security by knowing about all the devices that can connect and send data, either by having the devices pre-registered with the service, or by giving the devices secret keys or certificates they can use to register themselves with the service the first time they connect. Unknown devices are unable to connect, if they try the service rejects the connection and ignores messages sent by them.
 
-### Send telemetry from your IoT device
+✅ Do some research: What is the downside of having an open IoT service where any device or code can connect? Can you find specific examples of hackers taking advantage of this?
 
-The next part in adding Internet control to your nightlight is sending the light level telemetry to the MQTT broker on a telemetry topic.
+Other components of your application can connect to the IoT service and learn about all the devices that are connected or registered, and communicate with them directly in bulk or individually.
 
-#### Task - send telemetry from your IoT device
+> 💁 IoT services also implement additional capabilities, and the cloud providers have additional services and applications that can be connected to the service. For example, if you want to store all the telemetry messages sent by all the devices in a database, it's usually only a few clicks in the cloud provider's configuration tool to connect the service to a database and stream the data in.
 
-Send light level telemetry to the MQTT broker.
+## Create an IoT service in the cloud
 
-Data is sent encoded as JSON - short for JavaScript Object Notation, a standard for encoding data in text using key/value pairs.
+Now that you have an Azure subscription, you can sign up for an IoT service. The IoT service from Microsoft is called Azure IoT Hub.
 
-✅ If you've not come across JSON before, you can learn more about it on the [JSON.org documentation](https://www.json.org/).
+![The Azure IoT Hub logo](../../../images/azure-iot-hub-logo.png)
 
-Follow the relevant step below to send telemetry from your device to the MQTT broker:
+The video below gives a short overview of Azure IoT Hub:
 
-* [Arduino - Wio Terminal](wio-terminal-telemetry.md)
-* [Single-board computer - Raspberry Pi/Virtual IoT device](single-board-computer-telemetry.md)
+[![Overview of Azure IoT Hub video](https://img.youtube.com/vi/smuZaZZXKsU/0.jpg)](https://www.youtube.com/watch?v=smuZaZZXKsU)
 
-### Receive telemetry from the MQTT broker
+> 🎥 Click the image above to watch a video
 
-There's no point in sending telemetry if there's nothing on the other end to listen for it. The light level telemetry needs something listening to it to process the data. This 'server' code is the kind of code you will deploy to a cloud service as part of a larger IoT application, but here you are going to run this code locally on your computer (or on your Pi if you are coding directly on there). The server code consists of a Python app that listens to telemetry messages over MQTT with light levels. Later in this lesson you will make it reply with a command message with instructions to turn the LED on or off.
+✅ Take a moment to do some research and read the overview of IoT hub in the [Microsoft IoT Hub documentation](https://docs.microsoft.com/azure/iot-hub/about-iot-hub?WT.mc_id=academic-17441-jabenn).
 
-✅ Do some research: What happens to MQTT messages if there is no listener?
+The cloud services available in Azure can be configured through a web-based portal, or via a command-line interface (CLI). For this task, you will use the CLI.
 
-#### Install Python and VS Code
+### Task - install the Azure CLI
 
-If you don't have Python and VS Code installed locally, you will need to install them both to code the server. If you are using a virtual IoT device, or are working on your Raspberry Pi you can skip this step as you should already have this installed and configured.
+To use the Azure CLI, first it must be installed on your PC or Mac.
 
-##### Task - install Python and VS Code
+1. Follow the instructions in the [Azure CLI documentation](https://docs.microsoft.com/cli/azure/install-azure-cli?WT.mc_id=academic-17441-jabenn) to install the CLI.
 
-Install Python and VS Code.
-
-1. Install Python. Refer to the [Python downloads page](https://www.python.org/downloads/) for instructions on install the latest version of Python.
-
-1. Install Visual Studio Code (VS Code). This is the editor you will be using to write your virtual device code in Python. Refer to the [VS Code documentation](https://code.visualstudio.com?WT.mc_id=academic-17441-jabenn) for instructions on installing VS Code.
-
-    > 💁 You are free to use any Python IDE or editor for these lessons if you have a preferred tool, but the lessons will give instructions based off using VS Code.
-
-1. Install the VS Code Pylance extension. This is an extension for VS Code that provides Python language support. Refer to the [Pylance extension documentation](https://marketplace.visualstudio.com/items?WT.mc_id=academic-17441-jabenn&itemName=ms-python.vscode-pylance) for instructions on installing this extension in VS Code.
-
-#### Configure a Python virtual environment
-
-One of the powerful features of Python is the ability to install [pip packages](https://pypi.org) - these are packages of code written by other people and published to the Internet. You can install a pip package onto your computer with one command, then use that package in your code. You'll be using pip to install a package to communicate over MQTT.
-
-By default when you install a package it is available everywhere on your computer, and this can lead to problems with package versions - such as one application depending on one version of a package that breaks when you install a new version for a different application. To work around this problem, you can use a [Python virtual environment](https://docs.python.org/3/library/venv.html), essentially a copy of Python in a dedicated folder, and when you install pip packages they get installed just to that folder.
-
-##### Task - configure a Python virtual environment
-
-Configure a Python virtual environment and install the MQTT pip packages.
-
-1. From your terminal or command line, run the following at a location of your choice to create and navigate to a new directory:
+1. The Azure CLI supports a number of extensions that add capabilities to manage a wide range of Azure services. Install the IoT extension by running the following command from your command line or terminal:
 
     ```sh
-    mkdir nightlight-server
-    cd nightlight-server
+    az extension add --name azure-iot
     ```
 
-1. Now run the following to create a virtual environment in the `.venv` folder
+1. From your command line or terminal, run the following command to log in to your Azure subscription from the Azure CLI.
 
     ```sh
-    python3 -m venv .venv
+    az login
     ```
 
-    > 💁 You need to explicitly call `python3` to create the virtual environment just in case you have Python 2 installed in addition to Python 3 (the latest version). If you have Python2 installed then calling `python` will use Python 2 instead of Python 3
+    A web page will be launched in your default browser. Log in using the account you used to sign up for your Azure subscription. Once you are logged in, you can close the browser tab.
 
-1. Activate the virtual environment:
-
-    * On Windows:
-        * If you are using the Command Prompt, or the Command Prompt through Windows Terminal, run:
-
-            ```cmd
-            .venv\Scripts\activate.bat
-            ```
-
-        * If you are using PowerShell, run:
-
-            ```powershell
-            .\.venv\Scripts\Activate.ps1
-            ```
-
-    * On macOS or Linux, run:
-
-        ```cmd
-        source ./.venv/bin/activate
-        ```
-
-    > 💁 These commands should be run from the same location you ran the command to create the virtual environment. You will never need to navigate into the `.venv` folder, you should always run the activate command and any commands to install packages or run code from the folder you were in when you created the virtual environment.
-
-1. Once the virtual environment has been activated, the default `python` command will run the version of Python that was used to create the virtual environment. Run the following to get the version:
+1. If you have multiple Azure subscriptions, such as a school provided one, and your own Azure for Students subscription, you will need to select the one you want to use. Run the following command to list all the subscriptions you have access to:
 
     ```sh
-    python --version
+    az account list --output table
     ```
 
-    The output will be similar to the following:
+    In the output, you will see the name of each subscription along with its `SubscriptionId`.
 
     ```output
-    (.venv) ➜  nightlight-server python --version
-    Python 3.9.1
+    ➜  ~ az account list --output table
+    Name                    CloudName    SubscriptionId                        State    IsDefault
+    ----------------------  -----------  ------------------------------------  -------  -----------
+    School-subscription     AzureCloud   cb30cde9-814a-42f0-a111-754cb788e4e1  Enabled  True
+    Azure for Students      AzureCloud   fa51c31b-162c-4599-add6-781def2e1fbf  Enabled  False
     ```
 
-    > 💁 Your Python version may be different - as long as it's version 3.6 or higher you are good. If not, delete this folder, install a newer version of Python and try again.
-
-1. Run the following commands to install the pip package for [Paho-MQTT](https://pypi.org/project/paho-mqtt/), a popular MQTT library.
+    To select the subscription you want to use, use the following command:
 
     ```sh
-    pip install paho-mqtt
+    az account set --subscription <SubscriptionId>
     ```
 
-    This pip package will only be installed in the virtual environment, and will not be available outside of this.
+    Replace `<SubscriptionId>` with the Id of the subscription you want to use. After running this command, re-run the command to list your accounts. You will see the `IsDefault` column will be marked as `True` for the subscription you have just set.
 
-#### Write the server code
+### Task - create a resource group
 
-The server code can now be written in Python.
+Azure services, such as IoT Hub instances, virtual machines, databases, or AI services, are referred to as **resources**. Every resource has to live inside a **Resource Group**, a logical grouping of one or more resources.
 
-##### Task - write the server code
+> 💁 Using resource groups means you can manage multiple services at once. For example, once you have finished all the lessons for this project you can delete the resource group, and all the resources in it will be deleted automatically.
 
-Write the server code.
-
-1. From your terminal or command line, run the following inside the virtual environment to create a Python file called `app.py`:
-
-    * From Windows run:
-
-        ```cmd
-        type nul > app.py
-        ```
-
-    * On macOS or Linux, run:
-
-        ```cmd
-        touch app.py
-        ```
-
-1. Open the current folder in VS Code:
+1. There are multiple Azure data centers around the world, divided up into regions. When you create an Azure resource or resource group, you have to specify where you want it created. Run the following command to get the list of locations:
 
     ```sh
-    code .
+    az account list-locations --output table
     ```
 
-1. When VS Code launches, it will activate the Python virtual environment. This will be reported in the bottom status bar:
+    You will see a list of locations. This list will be long.
 
-    ![VS Code showing the selected virtual environment](../../../images/vscode-virtual-env.png)
-
-1. If the VS Code Terminal is already running when VS Code starts up, it won't have the virtual environment activated in it. The easiest thing to do is kill the terminal using the **Kill the active terminal instance** button:
-
-    ![VS Code Kill the active terminal instance button](../../../images/vscode-kill-terminal.png)
-
-1. Launch a new VS Code Terminal by selecting *Terminal -> New Terminal, or pressing `` CTRL+` ``. The new terminal will load the virtual environment, with the call to activate this appearing in the terminal. The name of the virtual environment (`.venv`) will also be in the prompt:
+    > 💁 At the time of writing, there are 65 locations you can deploy to.
 
     ```output
-    ➜  nightlight-server source .venv/bin/activate
-    (.venv) ➜  nightlight 
+        ➜  ~ az account list-locations --output table
+    DisplayName               Name                 RegionalDisplayName
+    ------------------------  -------------------  -------------------------------------
+    East US                   eastus               (US) East US
+    East US 2                 eastus2              (US) East US 2
+    South Central US          southcentralus       (US) South Central US
+    ...
     ```
 
-1. Open the `app.py` file from the VS Code explorer and add the following code:
+    Note down the value from the `Name` column of the region closest to you. You can find the regions on a map on the [Azure geographies page](https://azure.microsoft.com/global-infrastructure/geographies/?WT.mc_id=academic-17441-jabenn).
 
-    ```python
-    import json
-    import time
-    
-    import paho.mqtt.client as mqtt
-    
-    id = '<ID>'
-    
-    client_telemetry_topic = id + '/telemetry'
-    client_name = id + 'nightlight_server'
-    
-    mqtt_client = mqtt.Client(client_name)
-    mqtt_client.connect('test.mosquitto.org')
-    
-    mqtt_client.loop_start()
-    
-    def handle_telemetry(client, userdata, message):
-        payload = json.loads(message.payload.decode())
-        print("Message received:", payload)
-    
-    mqtt_client.subscribe(client_telemetry_topic)
-    mqtt_client.on_message = handle_telemetry
-    
-    while True:
-        time.sleep(2)
-    ```
-
-    Replace `<ID>` on line 6 with the unique ID you used when creating your device code.
-
-    ⚠️ This **must** be the same ID that you used on your device, or the server code won't subscribe or publish to the right topic.
-
-    This code creates an MQTT client with a unique name, and connects to the *test.mosquitto.org* broker. It then starts a processing loop that runs in on a background thread listening for messages on any subscribed topics.
-
-    The client then subscribes to messages on the telemetry topic, and defines a function that is called when a message is received. When a telemetry message is received, the `handle_telemetry` function is called, printing the message received to the console.
-
-    Finally an infinite loop keeps the application running. The MQTT client is listening to messages on a background thread and runs all the time the main application is running.
-
-1. From the VS Code terminal, run the following to run your Python app:
+1. Run the following command to create a resource group called `soil-moisture-sensor`. Resource group names have to be unique in your subscription.
 
     ```sh
-    python app.py
+    az group create --name soil-moisture-sensor \
+                    --location <location>
     ```
 
-    The app will start listening to messages from the IoT device.
+    Replace `<location>` with the location you selected in the previous step.
 
-1. Make sure your device is running and sending telemetry messages. Adjust the light levels detected by your physical or virtual device. Messages being received will be printed to the terminal.
+### Task - create an IoT Hub
+
+You can now create an IoT Hub resource in your resource group.
+
+1. Use the following command to create your IoT hub resource:
+
+    ```sh
+    az iot hub create --resource-group soil-moisture-sensor \
+                      --sku F1 \
+                      --partition-count 2 \
+                      --name <hub_name>
+    ```
+
+    Replace `<hub_name>` with a name for your hub. This name needs to be globally unique - that is no other IoT Hub created by anyone can have the same name. This name is used in a URL that points to the hub, so needs to be unique. Use something like `soil-moisture-sensor-` and add a unique identifier on the end, like some random words or your name.
+
+    The `--sku F1` option tells it to use a free tier. The free tier supports 8,000 messages a day along with most of the features of the full-price tiers.
+
+    > 🎓 Different pricing levels of Azure services are referred to as tiers. Each tier has a different cost and provides different features or data volumes.
+
+    > 💁 If you want to learn more about pricing, you can check out the [Azure IoT Hub pricing guide](https://azure.microsoft.com/pricing/details/iot-hub/?WT.mc_id=academic-17441-jabenn).
+
+    The `--partition-count 2` option defines how many streams of data the IoT Hub supports, more partitions reduce data blocking when multiple things read and write from the IoT Hub. Partitions are outside the scope of these lessons, but this value needs to be set to create a free tier IoT Hub.
+
+    > 💁 You can only have one free tier IoT Hub per subscription.
+
+The IoT Hub will be created. It make take a minute or so for this to complete.
+
+## Communicate with IoT Hub
+
+In the previous lesson, you used MQTT and sent messages back and forward on different topics, with the different topics having different purposes. Rather than send messages over different topics, IoT Hub has a number of defined ways for the device to communicate with the Hub, or for the Hub to communicate with the device.
+
+> 💁 Under the hood this communication between IoT Hub and your device can use MQTT, HTTPS or AMQP.
+
+* Device to cloud (D2C) messages - these are messages sent from a device to IoT Hub, such as telemetry. They can then be read off the IoT Hub by your application code.
+
+    > 🎓 Under the hood, IoT Hub uses an Azure service called [Event Hubs](https://docs.microsoft.com/azure/event-hubs/?WT.mc_id=academic-17441-jabenn). When you write code to read messages sent to the hub, these are often called events.
+
+* Cloud to device (C2D) messages - these are messages sent from application code, via an IoT Hub to an IoT device
+
+* Direct method requests - these are messages sent from application code via an IoT Hub to an IoT device to request that the device does something, such as control an actuator. These messages require a response so your application code can tell if it was successfully processed.
+
+* Device twins - these are JSON documents kept synchronized between the device and IoT Hub, and are used to store settings or other properties either reported by the device, or should be set on the device (known as desired) by the IoT Hub.
+
+IoT Hub can store messages and direct method requests for a configurable period of time (defaulting to one day), so if a device or application code loses connection, it can still retrieve messages sent whilst it was offline after it reconnects. Device twins are kept permanently in the IoT Hub, so at any time a device can reconnect and get the latest device twin.
+
+✅ Do some research: Read more on these message types on the [Device-to-cloud communications guidance](https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-d2c-guidance?WT.mc_id=academic-17441-jabenn), and the [Cloud-to-device communications guidance](https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-c2d-guidance?WT.mc_id=academic-17441-jabenn) in the IoT Hub documentation.
+
+## Connect your device to the IoT service
+
+Once the hub is created, your IoT device can connect to it. Only registered devices can connect to a service, so you will need to register your device first. When you register you can get back a connection string that the device can use to connect. This connection string is device specific, and contains information about the IoT Hub, the device, and a secret key that will allow this device to connect.
+
+> 🎓 A connection string is a generic term for a piece of text that contains connection details. These are used when connecting to IoT Hubs, databases and many other services. They usually consist of an identifier for the service, such as a URL, and security information such as a secret key. These are passed to SDKs to connect to the service.
+
+> ⚠️ Connection strings should be kept secure! Security will be covered in more detail in a future lesson.
+
+### Task - register your IoT device
+
+The IoT device can be registered with your IoT Hub using the Azure CLI.
+
+1. Run the following command to register a device:
+
+    ```sh
+    az iot hub device-identity create --device-id soil-moisture-sensor \
+                                      --hub-name <hub_name>
+    ```
+
+    Replace `<hub_name>` with the name you used for your IoT Hub.
+
+    This will create a device with an ID of `soil-moisture-sensor`.
+
+1. When your IoT device connects to your IoT Hub using the SDK, it needs to use a connection string that gives the URL of the hub, along with a secret key. Run the following command to get the connection string:
+
+    ```sh
+    az iot hub device-identity connection-string show --device-id soil-moisture-sensor \
+                                                      --output table \
+                                                      --hub-name <hub_name>
+    ```
+
+    Replace `<hub_name>` with the name you used for your IoT Hub.
+
+1. Store the connection string that is shown in the output as you will need it later.
+
+### Task - connect your IoT device to the cloud
+
+Work through the relevant guide to connect your IoT device to the cloud:
+
+* [Arduino - Wio Terminal](wio-terminal-connect-hub.md)
+* [Single-board computer - Raspberry Pi/Virtual IoT device](single-board-computer-connect-hub.md)
+
+### Task - monitor events
+
+For now, you won't be updating your server code. Instead you can use the Azure CLI to monitor events from your IoT device.
+
+1. Make sure your IoT device is running and sending soil moisture telemetry values
+
+1. Run the following command in your command prompt or terminal to monitor messages sent to your IoT Hub:
+
+    ```sh
+    az iot hub monitor-events --hub-name <hub_name>
+    ```
+
+    Replace `<hub_name>` with the name you used for your IoT Hub.
+
+    You will see messages appear in the console output as they are sent by your IoT device.
 
     ```output
-    (.venv) ➜  nightlight-server python app.py
-    Message received: {'light': 0}
-    Message received: {'light': 400}
+    Starting event monitor, use ctrl-c to stop...
+    {
+        "event": {
+            "origin": "soil-moisture-sensor",
+            "module": "",
+            "interface": "",
+            "component": "",
+            "payload": "{\"soil_moisture\": 376}"
+        }
+    },
+    {
+        "event": {
+            "origin": "soil-moisture-sensor",
+            "module": "",
+            "interface": "",
+            "component": "",
+            "payload": "{\"soil_moisture\": 381}"
+        }
+    }
     ```
 
-    The app.py file in the nightlight virtual environment has to be running for the app.py file in the nightlight-server virtual environment to receive the messages being sent.
+    The contents of the `payload` will match the message sent by your IoT device.
 
-> 💁 You can find this code in the [code-server/server](code-server/server) folder.
+    > At the time of writing, the `az iot` extension is not fully working on Apple Silicon. If you are using an Apple Silicon device, you will need to monitor the messages a different way, such as using the [Azure IoT Tools for Visual Studio Code](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-vscode-iot-toolkit-cloud-device-messaging).
 
-### How often should telemetry be sent?
+1. These messages have a number of properties attached to them automatically, such as the timestamp they were sent. These are known as *annotations*. To view all the message annotations, use the following command:
 
-One important consideration with telemetry is how often to measure and send the data? The answer is - it depends. If you measure often you can respond faster to changes in measurements, but you use more power, more bandwidth, generate more data and need more cloud resources to process. You need to measure often enough, but not too often.
-
-For a thermostat, measuring every few minutes is probably more than enough as temperatures don't change that often. If you only measure once a day then you could end up heating your house for nighttime temperatures in the middle of a sunny day, whereas if you measure every second you will have thousands of unnecessarily duplicated temperature measurements that will eat into the users' Internet speed and bandwidth (a problem for people with limited bandwidth plans), use more power which can be a problem for battery powered devices like remote sensors, and increase the cost of the providers cloud computing resources processing and storing them.
-
-If you are monitoring data around a piece of machinery in a factory that if it fails could cause catastrophic damage and millions of dollars in lost revenue, then measuring multiple times a second might be necessary. It's better to waste bandwidth than miss telemetry that indicates that a machine needs to be stopped and fixed before it breaks.
-
-> 💁 In this situation, you might consider having an edge device to process the telemetry first to reduce reliance on the Internet.
-
-### Loss of connectivity
-
-Internet connections can be unreliable, with outages common. What should an IoT device do under these circumstances - should it lose the data, or should it store it until connectivity is restored? Again, the answer is it depends.
-
-For a thermostat the data can probably be lost as soon as a new temperature measurement has been taken. The heating system doesn't care that 20 minutes ago it was 20.5°C if the temperature is now 19°C, it's the temperature now that determines if the heating should be on or off.
-
-For machinery you might want to keep the data, especially if it is used to look for trends. There are machine learning models that can detect anomalies in streams of data by looking over data from defined period of time (such as the last hour) and spotting anomalous data. This is often used for predictive maintenance, looking for indications that something might break soon so you can repair or replace it before that happens. You might want every bit of telemetry for a machine sent so it can be processed for anomaly detection, so once the IoT device can reconnect it will send all the telemetry generated during the Internet outage.
-
-IoT device designers should also consider if the IoT device can be used during an Internet outage or loss of signal caused by location. A smart thermostat should be able to make some limited decisions to control heating if it can't send telemetry to the cloud due to an outage.
-
-[![This ferrari got bricked because someone tried to upgrade it underground where there's no cell reception](../../../images/bricked-car.png)](https://twitter.com/internetofshit/status/1315736960082808832)
-
-For MQTT to handle a loss of connectivity, the device and server code will need to be responsible for ensuring message delivery if it is needed, for example by requiring that all messages sent are replied to by additional messages on a reply topic, and if not they are queued manually to be replayed later.
-
-## Commands
-
-Commands are messages sent by the cloud to a device, instructing it to do something. Most of the time this involves giving some kind of output via an actuator, but it can be an instruction for the device itself, such as to reboot, or gather extra telemetry and return it as a response to the command.
-
-![An Internet connected thermostat receiving a command to turn on the heating](../../../images/commands.png)
-
-A thermostat could receive a command from the cloud to turn the heating on. Based on the telemetry data from all the sensors, if the cloud service has decided that the heating should be on, so it sends the relevant command.
-
-### Send commands to the MQTT broker
-
-The next step for our Internet controlled nightlight is for the server code to send a command back to the IoT device to control the light based on the light levels it senses.
-
-1. Open the server code in VS Code
-
-1. Add the following line after the declaration of the `client_telemetry_topic` to define which topic to send commands to:
-
-    ```python
-    server_command_topic = id + '/commands'
+    ```sh
+    az iot hub monitor-events --properties anno --hub-name <hub_name>
     ```
 
-1. Add the following code to the end of the `handle_telemetry` function:
+    Replace `<hub_name>` with the name you used for your IoT Hub.
 
-    ```python
-    command = { 'led_on' : payload['light'] < 300 }
-    print("Sending message:", command)
-    
-    client.publish(server_command_topic, json.dumps(command))
-    ```
-
-    This sends a JSON message to the command topic with the value of `led_on` set to true or false depending on if the light is less than 300 or not. If the light is less than 300, true is sent to instruct the device to turn the LED on.
-
-1. Run the code as before
-
-1. Adjust the light levels detected by your physical or virtual device. Messages being received and commands being sent will be written to the terminal:
+    You will see messages appear in the console output as they are sent by your IoT device.
 
     ```output
-    (.venv) ➜  nightlight-server python app.py
-    Message received: {'light': 0}
-    Sending message: {'led_on': True}
-    Message received: {'light': 400}
-    Sending message: {'led_on': False}
+    Starting event monitor, use ctrl-c to stop...
+    {
+        "event": {
+            "origin": "soil-moisture-sensor",
+            "module": "",
+            "interface": "",
+            "component": "",
+            "properties": {},
+            "annotations": {
+                "iothub-connection-device-id": "soil-moisture-sensor",
+                "iothub-connection-auth-method": "{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}",
+                "iothub-connection-auth-generation-id": "637553997165220462",
+                "iothub-enqueuedtime": 1619976150288,
+                "iothub-message-source": "Telemetry",
+                "x-opt-sequence-number": 1379,
+                "x-opt-offset": "550576",
+                "x-opt-enqueued-time": 1619976150277
+            },
+            "payload": "{\"soil_moisture\": 381}"
+        }
+    }
     ```
 
-> 💁 The telemetry and commands are being sent on a single topic each. This means telemetry from multiple devices will appear on the same telemetry topic, and commands to multiple devices will appear on the same commands topic. If you wanted to send a command to a specific device, you could use multiple topics, named with a unique device id, such as `/commands/device1`, `/commands/device2`. That way a device can listen on messages just meant for that one device.
+    The time values in the annotations are in [UNIX time](https://wikipedia.org/wiki/Unix_time), representing the number of seconds since midnight on 1<sup>st</sup> January 1970.
 
-> 💁 You can find this code in the [code-commands/server](code-commands/server) folder.
+    Exit the event monitor when you are done.
 
-### Handle commands on the IoT device
+### Task - control your IoT device
 
-Now that commands are being sent from the server, you can now add code to the IoT device to handle them and control the LED.
+You can also use the Azure CLI to call direct methods on your IoT device.
 
-Follow the relevant step below to listen to commands from the MQTT broker:
+1. Run the following command in your command prompt or terminal to invoke the `relay_on` method on the IoT device:
 
-* [Arduino - Wio Terminal](wio-terminal-commands.md)
-* [Single-board computer - Raspberry Pi/Virtual IoT device](single-board-computer-commands.md)
+    ```sh
+    az iot hub invoke-device-method --device-id soil-moisture-sensor \
+                                    --method-name relay_on \
+                                    --method-payload '{}' \
+                                    --hub-name <hub_name>
+    ```
 
-Once this code is written and running, experiment with changing light levels. Watch the output from the server and device, and watch the LED as you change light levels.
+    Replace `<hub_name>` with the name you used for your IoT Hub.
 
-### Loss of connectivity
+    This sends a direct method request for the method specified by `method-name`. Direct methods can take a payload containing data for the method, and this can be specified in the `method-payload` parameter as JSON.
 
-What should a cloud service do if it needs to send a command to an IoT device that is offline? Again, the answer is it depends.
+    You will see the relay turn on, and the corresponding output from your IoT device:
 
-If the latest command overrides an earlier one then the earlier ones can probably be ignored. If a cloud service sends a command to turn the heating on, then sends a command to turn it off, then the on command can be ignored and not resent.
+    ```output
+    Direct method received -  relay_on
+    ```
 
-If the commands need to be processed in sequence, such as move a robot arm up, then close a grabber then they need to be sent in order once connectivity is restored.
-
-✅ How could the device or server code ensure commands are always sent and handled in order over MQTT if needed?
+1. Repeat the above step, but set the `--method-name` to `relay_off`. You will see the relay turn off and the corresponding output from the IoT device.
 
 ---
 
 ## 🚀 Challenge
 
-The challenge in the last three lessons was to list as many IoT devices as you can that are in your home, school or workplace and decide if they are built around microcontrollers or single-board computers, or even a mixture of both, and think about what sensors and actuators they are using.
+The free tier of IoT Hub allows 8,000 messages a day. The code you wrote sends telemetry messages every 10 seconds. How many messages a day is one message every 10 seconds?
 
-For these devices, think about what messages they might be sending or receiving. What telemetry do they send? What messages or commands might they receive? Do you think they are secure?
+Think about how often soil moisture measurements should be sent? How can you change your code to stay within the free tier and check as often as needed but not too often? What if you wanted to add a second device?
 
 ## Post-lecture quiz
 
-[Post-lecture quiz](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/8)
+[Post-lecture quiz](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/16)
 
 ## Review & Self Study
 
-Read more on MQTT on the [MQTT Wikipedia page](https://wikipedia.org/wiki/MQTT).
+The IoT Hub SDK is open source for both Arduino and Python. In the code repos on GitHub there are a number of samples showing how work with different IoT Hub features.
 
-Try running an MQTT broker yourself using [Mosquitto](https://www.mosquitto.org) and connect to it from your IoT device and server code.
-
-> 💁 Tip - by default Mosquitto doesn't allow anonymous connections (that is connecting without a username and password), and doesn't allow connections from outside of the computer it's running on.
-> You can fix this with a [`mosquitto.conf` config file](https://www.mosquitto.org/man/mosquitto-conf-5.html) with the following:
->
-> ```sh
-> listener 1883 0.0.0.0
-> allow_anonymous true
-> ```
+* If you are using a Wio Terminal, check out the [Arduino samples on GitHub](https://github.com/Azure/azure-iot-pal-arduino/tree/master/pal/samples)
+* If you are using a Raspberry Pi or Virtual device, check out the [Python samples on GitHub](https://github.com/Azure/azure-iot-sdk-python/tree/master/azure-iot-hub/samples)
 
 ## Assignment
 
-[Compare and contrast MQTT with other communication protocols](assignment.md)
+[Learn about cloud services](assignment.md)
