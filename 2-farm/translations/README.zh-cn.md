@@ -4,16 +4,16 @@
 
 在这6节课程中你将会学到怎样应用物联网去改进和自动化农业生产。
 
-> 💁 这些课程将会使用一些云端资源。如果你没有完成这个项目的所有课程，请确保你[清理你的项目](../clean-up.md).
+> 💁 这些课程将会使用一些云端资源。如果你没有完成这个项目的所有课程，请确保你[清理你的项目](../../clean-up.md).
 
 ## 主题
 
 1. [应用物联网预测植物生长](../lessons/1-predict-plant-growth/translations/README.zh-cn.md)
-1. [检测土壤湿度](../lessons/2-detect-soil-moisture/README.md)
-1. [自动给植物浇水](../lessons/3-automated-plant-watering/README.md)
-1. [将你的植物迁移到云端](../lessons/4-migrate-your-plant-to-the-cloud/README.md)
-1. [将你的应用程序逻辑迁移到云端](../lessons/5-migrate-application-to-the-cloud/README.md)
-1. [确保你的植物安全](../lessons/6-keep-your-plant-secure/README.md)
+1. [检测土壤湿度](../lessons/2-detect-soil-moisture/README.zh-cn.md)
+1. [自动给植物浇水](../lessons/3-automated-plant-watering/README.zh-cn.md)
+1. [将你的植物迁移到云端](../lessons/4-migrate-your-plant-to-the-cloud/README.zh-cn.md)
+1. [将你的应用程序逻辑迁移到云端](../lessons/5-migrate-application-to-the-cloud/README.zh-cn.md)
+1. [确保你的植物安全](../lessons/6-keep-your-plant-secure/README.zh-cn.md)
 
 ## 作者
 
