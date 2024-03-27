@@ -201,9 +201,9 @@ Zigbee 是商业设备连接的一种流行方式。Zigbee 使用 WiFi 在设备
 
 阅读相关指南，使用 IoT 设备测量土壤湿度：
 
-* [Arduino - Wio 终端](wio-terminal-soil-moisture.md)
-* [单板计算机-Raspberry Pi](pi-soil-moisture.md)
-* [单板机-虚拟设备](virtual-device-soil-moisture.md)
+* [Arduino - Wio 终端](../wio-terminal-soil-moisture.md)
+* [单板计算机-Raspberry Pi](../pi-soil-moisture.md)
+* [单板机-虚拟设备](../virtual-device-soil-moisture.md)
 
 ## 传感器校准
 
@@ -264,4 +264,4 @@ Zigbee 是商业设备连接的一种流行方式。Zigbee 使用 WiFi 在设备
 
 ＃＃ 任务
 
-[校准你的传感器](assignment.md)
+[校准你的传感器](../assignment.md)
