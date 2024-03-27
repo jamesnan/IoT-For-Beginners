@@ -1,0 +1,480 @@
+
+# 将应用程序逻辑迁移到云端
+
+![本课的 sketchnote 概述](../../../../sketchnotes/lesson-9.jpg)
+
+> [Nitya Narasimhan](https://github.com/nitya) 的草图笔记。单击图像可查看更大的版本。
+
+
+本课程是 [Microsoft Reactor](https://developer.microsoft.com/reactor/?WT.mc_id=academic-17441-jabenn) 的 [IoT 初学者项目 2 - 数字农业系列](https://youtube.com/playlist?list=PLmsFUfdnGr3yCutmcVg6eAUEfsGiFXgcx) 的一部分。
+
+[![使用无服务器代码控制您的 IoT 设备](https://img.youtube.com/vi/VVZDcs5u1_I/0.jpg)](https://youtu.be/VVZDcs5u1_I)
+
+## 课前测验
+
+[课前测验](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/17)
+
+＃＃ 介绍
+
+在上一课中，您学习了如何将植物土壤湿度监测和继电器控制连接到基于云的物联网服务。下一步是将控制中继时间的服务器代码移至云端。在本课程中，您将学习如何使用无服务器函数来执行此操作。
+
+在本课中，我们将介绍：
+
+* [什么是无服务器？](#什么是无服务器)
+* [创建无服务器应用程序](#create-a-serverless-application)
+* [创建 IoT 中心事件触发器](#create-an-iot-hub-event-trigger)
+* [从无服务器代码发送直接方法请求](#send-direct-method-requests-from-serverless-code)
+* [将您的无服务器代码部署到云](#deploy-your-serverless-code-to-the-cloud)
+
+## 什么是无服务器？
+
+无服务器或无服务器计算涉及创建在云中运行以响应不同类型事件的小代码块。当事件发生时，您的代码将运行，并且会传递有关该事件的数据。这些事件可以来自许多不同的事物，包括 Web 请求、放入队列的消息、数据库中数据的更改或 IoT 设备发送到 IoT 服务的消息。
+
+![从 IoT 服务发送到无服务器服务的事件，所有事件都由正在运行的多个函数同时处理](../../../../images/iot-messages-to-serverless.png)
+
+> 💁 如果您以前使用过数据库触发器，您可以将其视为同一件事，代码由插入行等事件触发。
+
+![当同时发送许多事件时，无服务器服务会扩展以同时运行所有事件](../../../../images/serverless-scaling.png)
+
+您的代码仅在事件发生时运行，没有任何东西可以让您的代码在其他时间保持活动状态。事件发生后，您的代码将被加载并运行。这使得无服务器非常具有可扩展性——如果许多事件同时发生，云提供商可以在他们拥有的任何服务器上根据需要同时运行您的函数多次。这样做的缺点是，如果您需要在事件之间共享信息，则需要将其保存在数据库之类的地方，而不是将其存储在内存中。
+
+您的代码被编写为一个函数，该函数将有关事件的详细信息作为参数。您可以使用多种编程语言来编写这些无服务器函数。
+
+> 🎓 无服务器也称为函数即服务 (FaaS)，因为每个事件触发器都是作为代码中的函数实现的。
+
+尽管有这个名字，无服务器实际上确实使用服务器。命名是因为您作为开发人员不关心运行代码所需的服务器，您只关心代码是为了响应事件而运行的。云提供商有一个无服务器*运行时*，用于管理分配服务器、网络、存储、CPU、内存以及运行代码所需的所有其他内容。这种模式意味着您无法为每台服务器付费，因为没有服务器。相反，您需要为代码运行的时间和使用的内存量付费。
+
+> 💰 无服务器是在云中运行代码最便宜的方式之一。例如，在撰写本文时，一家云提供商允许您的所有无服务器功能每月执行总计 1,000,000 次，然后开始向您收费，之后每 1,000,000 次执行收取 0.20 美元。当您的代码未运行时，您无需付费。
+
+作为物联网开发人员，无服务器模型是理想的。您可以编写一个函数，调用该函数来响应从连接到云托管 IoT 服务的任何 IoT 设备发送的消息。您的代码将处理发送的所有消息，但仅在需要时运行。
+
+✅ 回顾一下您编写的通过 MQTT 监听消息的服务器代码的代码。如何使用无服务器在云中运行？您认为如何更改代码以支持无服务器计算？
+
+> 💁 除了运行代码之外，无服务器模型正在迁移到其他云服务。例如，无服务器数据库可以使用无服务器定价模型在云中使用，您可以根据针对数据库发出的请求（例如查询或插入）付费，通常根据为请求提供服务所需的工作量来定价。例如，针对主键单次选择一行的成本低于连接许多表并返回数千行的复杂操作。
+
+## 创建无服务器应用程序
+
+Microsoft 的无服务器计算服务称为 Azure Functions。
+
+![Azure Functions 徽标](../../../../images/azure-functions-logo.png)
+
+下面的简短视频概述了 Azure Functions
+
+[![Azure Functions 概述视频](https://img.youtube.com/vi/8-jz5f_JyEQ/0.jpg)](https://www.youtube.com/watch?v=8-jz5f_JyEQ)
+
+> 🎥 点击上图观看视频
+
+✅ 花点时间做一些研究并阅读 [Microsoft Azure Functions 文档](https://docs.microsoft.com/azure/azure-functions/functions-overview?WT.mc_id=academic- 17441-jabenn）。
+
+要编写 Azure Functions，请从使用您选择的语言的 Azure Functions 应用开始。开箱即用的 Azure Functions 支持 Python、JavaScript、TypeScript、C#、F#、Java 和 Powershell。在本课程中，您将学习如何使用 Python 编写 Azure Functions 应用程序。
+
+> 💁 Azure Functions 还支持自定义处理程序，因此您可以使用支持 HTTP 请求的任何语言编写函数，包括 COBOL 等较旧的语言。
+
+函数应用程序由一个或多个“触发器”组成 - 响应事件的函数。您可以在一个函数应用内拥有多个触发器，所有触发器都共享通用配置。例如，在 Functions 应用程序的配置文件中，您可以拥有 IoT 中心的连接详细信息，并且应用程序中的所有函数都可以使用它来连接和侦听事件。
+
+### 任务 - 安装 Azure Functions 工具
+
+> 在撰写本文时，Azure Functions 代码工具尚未完全适用于带有 Python 项目的 Apple Silicon。您需要使用基于 Intel 的 Mac、Windows PC 或 Linux PC。
+
+Azure Functions 的一大功能是可以在本地运行它们。在云中使用的相同运行时可以在您的计算机上运行，​​允许您编写响应 IoT 消息的代码并在本地运行。您甚至可以在处理事件时调试代码。一旦您对代码感到满意，就可以将其部署到云中。
+
+Azure Functions 工具以 CLI 形式提供，称为 Azure Functions 核心工具。
+
+1. 按照 [Azure Functions 核心工具文档](https://docs.microsoft.com/azure/azure-functions/functions-run-local?WT.mc_id=academic- 17441-jabenn)
+
+1. 安装 VS Code 的 Azure Functions 扩展。此扩展提供对创建、调试和部署 Azure 函数的支持。有关在 VS Code 中安装此扩展的说明，请参阅 [Azure Functions 扩展文档](https://marketplace.visualstudio.com/items?WT.mc_id=academic-17441-jabenn&itemName=ms-azuretools.vscode-azurefunctions)。
+
+将 Azure Functions 应用程序部署到云时，它需要使用少量云存储来存储应用程序文件和日志文件等内容。当您在本地运行 Functions 应用程序时，您仍然需要连接到云存储，但您可以使用名为 [Azurite](https://github.com/Azure/Azurite) 的存储模拟器，而不是使用实际的云存储。它在本地运行，但作用类似于云存储。
+
+> 🎓 在 Azure 中，Azure Functions 使用的存储是 Azure 存储帐户。这些帐户可以存储文件、blob、表中的数据或队列中的数据。您可以在多个应用程序（例如 Functions 应用程序和 Web 应用程序）之间共享一个存储帐户。
+
+1. Azurite 是一个 Node.js 应用程序，因此您需要安装 Node.js。您可以在[Node.js网站](https://nodejs.org/)上找到下载和安装说明。如果您使用的是 Mac，还可以从 [Homebrew](https://formulae.brew.sh/formula/node) 安装它。
+
+1. 使用以下命令安装 Azurite（`npm` 是安装 Node.js 时安装的工具）：
+
+    ````嘘
+    npm install -g 蓝铜矿
+    ````
+
+1. 创建一个名为 `azurite` 的文件夹，供 Azurite 用于存储数据：
+
+    ````嘘
+    mkdir 蓝铜矿
+    ````
+
+1. 运行 Azurite，并将其传递给这个新文件夹：
+
+    ````嘘
+    蓝铜矿--位置 蓝铜矿
+    ````
+
+    Azurite 存储模拟器将启动并准备好本地 Functions 运行时的连接。
+
+    ````输出
+    ➜ ~ 蓝铜矿 --位置 蓝铜矿  
+    Azurite Blob 服务从 http://127.0.0.1:10000 启动
+    Azurite Blob 服务已成功侦听 http://127.0.0.1:10000
+    Azurite Queue 服务从 http://127.0.0.1:10001 启动
+    Azurite 队列服务已成功侦听 http://127.0.0.1:10001
+    Azurite 表服务从 http://127.0.0.1:10002 启动
+    Azurite 表服务已成功侦听 http://127.0.0.1:10002
+    ````
+
+### 任务 - 创建 Azure Functions 项目
+
+Azure Functions CLI 可用于创建新的 Functions 应用程序。
+
+1. 为您的 Functions 应用程序创建一个文件夹并导航到该文件夹​​。称之为“土壤湿度触发”
+
+    ````嘘
+    mkdir 土壤湿度触发
+    CD 土壤湿度触发
+    ````
+
+1.在此文件夹内创建Python虚拟环境：
+
+    ````嘘
+    python3 -m venv .venv
+    ````
+
+1.激活虚拟环境：
+
+    * 在 Windows 上：
+        * 如果您使用命令提示符或通过 Windows 终端使用命令提示符，请运行：
+
+            ``cmd
+            .venv\脚本\activate.bat
+            ````
+
+        * 如果您使用 PowerShell，请运行：
+
+            ````powershell
+            .\.venv\Scripts\Activate.ps1
+            ````
+
+    * 在 macOS 或 Linux 上，运行：
+
+        ``cmd
+        来源./.venv/bin/activate
+        ````
+
+    > 💁 这些命令应该从运行创建虚拟环境的命令的同一位置运行。您永远不需要导航到“.venv”文件夹，您应该始终运行 activate 命令和任何命令来安装软件包或运行创建虚拟环境时所在文件夹中的代码。
+
+1. 运行以下命令在此文件夹中创建 Functions 应用程序：
+
+    ````嘘
+    func init --worker-runtime python 土壤水分触发
+    ````
+
+    这将在当前文件夹中创建三个文件：
+
+    * `host.json` - 此 JSON 文档包含 Functions 应用程序的设置。您不需要修改这些设置。
+    * `local.settings.json` - 此 JSON 文档包含您的应用程序在本地运行时将使用的设置，例如 IoT 中心的连接字符串。这些设置仅是本地的，不应添加到源代码控制中。当您将应用程序部署到云时，不会部署这些设置，而是从应用程序设置加载您的设置。本课稍后将对此进行介绍。
+    * `requirements.txt` - 这是一个 [Pip 要求文件](https://pip.pypa.io/en/stable/user_guide/#requirements-files)，其中包含运行 Functions 应用程序所需的 Pip 包。
+
+1. `local.settings.json` 文件具有 Functions 应用程序将使用的存储帐户的设置。默认为空设置，因此需要设置。要连接到 Azurite 本地存储模拟器，请将此值设置为以下值：
+
+    ```json
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    ````
+
+1. 使用需求文件安装必要的 Pip 包：
+
+    ````嘘
+    pip install -r 要求.txt
+    ````
+
+    > 💁 所需的 Pip 包需要位于此文件中，以便当 Functions 应用部署到云端时，运行时可以确保它安装正确的包。
+
+1. 要测试一切是否正常工作，您可以启动 Functions 运行时。运行以下命令来执行此操作：
+
+    ````嘘
+    功能开始
+    ````
+
+    您将看到运行时启动并报告它尚未找到任何作业功能（触发器）。
+
+    ````输出
+    (.venv) ➜ 土壤湿度触发函数启动
+    找到Python版本3.9.1（python3）。
+    
+    Azure Functions 核心工具
+    核心工具版本：3.0.3442 提交哈希：6bfab24b2743f8421475d996402c398d2fe4a9e0（64 位）
+    函数运行时版本：3.0.15417.0
+    
+    [2021-05-05T01:24:46.795Z] 未找到工作职能。
+    ````
+
+    > ⚠️ 如果您收到防火墙通知，请授予访问权限，因为“func”应用程序需要能够读取和写入您的网络。
+
+    > ⚠️ 如果您使用的是 macOS，输出中可能会出现警告：
+    >
+    > ```输出
+    > (.venv) ➜ 土壤湿度触发函数启动
+    > 找到Python 版本3.9.1 (python3)。
+    >
+    > Azure Functions 核心工具
+    > 核心工具版本：3.0.3442 提交哈希：6bfab24b2743f8421475d996402c398d2fe4a9e0（64 位）
+    > 函数运行版本：3.0.15417.0
+    >
+    > [2021-06-16T08:18:28.315Z] 无法创建共享内存使用目录：/dev/shm/AzureFunctions
+    > [2021-06-16T08:18:28.316Z] System.IO.FileSystem：对路径“/dev/shm/AzureFunctions”的访问被拒绝。不允许操作。
+    > [2021-06-16T08:18:30.361Z] 未找到工作职能。
+    > ```
+    >
+    > 只要 Functions 应用程序正确启动并列出正在运行的函数，您就可以忽略这些。正如[Microsoft 文档问答中的这个问题](https://docs.microsoft.com/answers/questions/396617/azure-functions-core-tools-error-osx-devshmazurefu.html?WT.mc_id=academic -17441-jabenn) 可以忽略。
+
+1. 按“ctrl+c”停止 Functions 应用程序。
+
+1. 打开 VS Code 中的当前文件夹，方法是打开 VS Code，然后打开此文件夹，或者运行以下命令：
+
+    ````嘘
+    代码 。
+    ````
+
+    VS Code 将检测您的 Functions 项目并显示一条通知：
+
+    ````输出
+    在文件夹“soil-moisture-trigger”中检测到可能是在外部创建的 Azure Functions 项目
+    VS 代码。初始化以获得 VS Code 的最佳使用？
+    ````
+
+    ![通知](../../../../images/vscode-azure-functions-init-notification.png)
+
+    从此通知中选择**是**。
+
+1. 确保 VS Code 终端中正在运行 Python 虚拟环境。终止它并在必要时重新启动它。
+
+## 创建 IoT 中心事件触发器
+
+Functions 应用程序是无服务器代码的外壳。要响应 IoT 中心事件，您可以向此应用添加 IoT 中心触发器。此触发器需要连接到发送到 IoT 中心的消息流并对其做出响应。要获取此消息流，您的触发器需要连接到 IoT 中心*事件中心兼容端点*。
+
+IoT 中心基于另一项名为 Azure 事件中心的 Azure 服务。事件中心是一项允许您发送和接收消息的服务，IoT 中心对此进行了扩展，为 IoT 设备添加了功能。连接以从 IoT 中心读取消息的方式与使用事件中心时的方式相同。
+
+✅ 做一些研究：阅读 [Azure 事件中心文档](https://docs.microsoft.com/azure/event-hubs/event-hubs-about?WT.mc_id=academic-17441-贾本）。基本功能与 IoT Hub 相比如何？
+
+对于要连接到 IoT 中心的 IoT 设备，它必须使用密钥来确保只有允许的设备才能连接。连接以读取消息时也是如此，您的代码将需要一个包含密钥的连接字符串以及 IoT 中心的详细信息。
+
+> 💁 您获得的默认连接字符串具有 **iothubowner** 权限，这为任何使用它的代码提供了 IoT 中心的完全权限。理想情况下，您应该使用所需的最低级别的权限进行连接。这将在下一课中介绍。
+
+连接触发器后，将针对发送到 IoT 中心的每条消息调用函数内的代码，无论发送的是哪个设备。触发器将把消息作为参数传递。
+
+### 任务 - 获取事件中心兼容的终结点连接字符串
+
+1. 从 VS Code 终端运行以下命令以获取 IoT 中心事件中心兼容终结点的连接字符串：
+
+    ````嘘
+    az iot hub 连接字符串显示 --default-eventhub \
+                                      --输出表\
+                                      --集线器名称
+    ````
+
+    替换 `
+    ` 替换为您用于 IoT 中心的名称。
+
+1. 在 VS Code 中，打开 `local.settings.json` 文件。在“Values”部分添加以下附加值：
+
+    ```json
+    “IOT_HUB_CONNECTION_STRING”：“
+     ”
+    ````
+
+    替换 `
+      ` 使用上一步中的值。您需要在上面的行后面添加一个逗号才能使此 JSON 有效。
+
+### 任务 - 创建事件触发器
+
+您现在已准备好创建事件触发器。
+
+1. 在 VS Code 终端的 `soil-moisture-trigger` 文件夹中运行以下命令：
+
+    ````嘘
+    func new --name iot-hub-trigger --template "Azure 事件中心触发器"
+    ````
+
+    这将创建一个名为“iot-hub-trigger”的新函数。该触发器将连接到 IoT 中心上与事件中心兼容的终结点，因此您可以使用事件中心触发器。没有特定的 IoT 中心触发器。
+
+这将在“soil-moisture-trigger”文件夹中创建一个名为“iot-hub-trigger”的文件夹，其中包含此函数。该文件夹中将包含以下文件：
+
+* `__init__.py` - 这是包含触发器的Python代码文件，使用标准Python文件名约定将此文件夹转换为Python模块。
+
+    该文件将包含以下代码：
+
+    ````蟒蛇
+    导入日志记录
+
+    导入 azure.functions 作为 func
+
+
+    def main(事件: func.EventHubEvent):
+        logging.info('Python EventHub 触发器处理了一个事件：%s',
+                    event.get_body().decode('utf-8'))
+    ````
+
+    触发器的核心是“main”函数。来自 IoT 中心的事件会调用此函数。该函数有一个名为“event”的参数，其中包含“EventHubEvent”。每次将消息发送到 IoT 中心时，都会调用此函数，将该消息作为“事件”以及与您在上一课中看到的注释相同的属性传递。
+
+    该函数的核心是记录事件。
+
+* `function.json` - 这包含触发器的配置。主要配置位于名为“绑定”的部分中。绑定是指 Azure Functions 与其他 Azure 服务之间的连接的术语。此函数具有到事件中心的输入绑定 - 它连接到事件中心并接收数据。
+
+    > 💁 您还可以拥有输出绑定，以便将函数的输出发送到另一个服务。例如，您可以将输出绑定添加到数据库并从函数返回 IoT 中心事件，它将自动插入到数据库中。
+
+    ✅ 做一些研究：阅读 [Azure Functions 触发器和绑定概念文档](https://docs.microsoft.com/azure/azure-functions/functions-triggers-bindings?WT.mc_id=academic-17441 -jabenn&tabs=python）。
+
+    “绑定”部分包含绑定的配置。感兴趣的值是：
+
+  * `"type": "eventHubTrigger"` - 这告诉函数需要监听来自事件中心的事件
+  * `"name": "events"` - 这是用于事件中心事件的参数名称。这与 Python 代码中“main”函数中的参数名称相匹配。
+  * `"direction": "in"` - 这是一个输入绑定，来自事件中心的数据进入函数
+  * `"connection": ""` - 这定义了从中读取连接字符串的设置的名称。在本地运行时，这将从“local.settings.json”文件中读取此设置。
+
+    > 💁 连接字符串不能存储在 `function.json` 文件中，必须从设置中读取。这是为了防止您意外暴露连接字符串。
+
+1. 由于[Azure Functions 模板中的错误](https://github.com/Azure/azure-functions-templates/issues/1250)，“function.json”的“基数”值不正确场地。将此字段从“many”更新为“one”：
+
+    ```json
+    “基数”：“一”，
+    ````
+
+1. 更新“function.json”文件中“connection”的值，使其指向您添加到“local.settings.json”文件中的新值：
+
+    ```json
+    “连接”：“IOT_HUB_CONNECTION_STRING”，
+    ````
+
+    > 💁 请记住 - 这需要指向设置，而不包含实际的连接字符串。
+
+1. 连接字符串包含`eventHubName`值，因此需要清除`function.json`文件中的该值。将此值更新为空字符串：
+
+    ```json
+    "事件中心名称": "",
+    ````
+
+### 任务 - 运行事件触发器
+
+1. 确保您没有运行 IoT 中心事件监视器。如果它与函数应用程序同时运行，函数应用程序将无法连接和使用事件。
+
+    > 💁 多个应用程序可以使用不同的*消费者组*连接到 IoT 中心端点。这些将在后面的课程中介绍。
+
+1. 要运行 Functions 应用程序，请从 VS Code 终端运行以下命令
+
+    ````嘘
+    功能开始
+    ````
+
+    Functions 应用程序将启动，并会发现“iot-hub-trigger”函数。然后，它将处理过去一天已发送到 IoT 中心的所有事件。
+
+    ````输出
+    (.venv) ➜ 土壤湿度触发函数启动
+    找到Python版本3.9.1（python3）。
+    
+    Azure Functions 核心工具
+    核心工具版本：3.0.3442 提交哈希：6bfab24b2743f8421475d996402c398d2fe4a9e0（64 位）
+    函数运行时版本：3.0.15417.0
+    
+    功能：
+    
+            iot-hub-trigger：eventHubTrigger
+    
+    要获得详细输出，请使用 --verbose 标志运行 func。
+    [2021-05-05T02:44:07.517Z]工作进程启动并初始化。
+    [2021-05-05T02：44：09.202Z]执行“Functions.iot-hub-trigger”（原因=“（null）”，Id=802803a5-eae9-4401-a1f4-176631456ce4）
+    [2021-05-05T02：44：09.205Z]触发器详细信息：PartitionId：0，偏移量：1011240-1011632，EnqueueTimeUtc：2021-05-04T19：04：04.2030000Z-2021-05-04T19：04：04.3900000Z，序列号：2546-2547，数量：2
+    [2021-05-05T02:44:09.352Z] Python EventHub 触发器处理了一个事件：{"soil_moisture":628}
+    [2021-05-05T02:44:09.354Z] Python EventHub 触发器处理了一个事件：{"soil_moisture":624}
+    [2021-05-05T02:44:09.395Z] 执行“Functions.iot-hub-trigger”（成功，Id=802803a5-eae9-4401-a1f4-176631456ce4，持续时间=245ms）
+    ````
+
+    对函数的每次调用都会被输出中的“Executing 'Functions.iot-hub-trigger”/“Executed 'Functions.iot-hub-trigger”块包围，因此您可以知道每个调用中处理了多少条消息函数调用。
+
+1. 确保您的物联网设备正在运行，您将看到功能应用程序中出现新的土壤湿度消息。
+
+1. 停止并重新启动 Functions 应用程序。您将看到它不会再次处理以前的消息，它只会处理新消息。
+
+> 💁 VS Code 还支持调试您的函数。您可以通过单击每行代码开头的边框，或将光标放在一行代码上并选择“运行”->“切换断点”或按“F9”来设置断点。您可以通过选择 *运行 -> 开始调试*，按“F5”，或选择 *运行和调试* 窗格并选择 **开始调试** 按钮来启动调试器。通过执行此操作，您可以查看正在处理的事件的详细信息。
+
+＃＃＃＃ 故障排除
+
+* 如果您收到以下错误：
+
+    ````输出
+    函数“Functions.iot-hub-trigger”的监听器无法启动。Microsoft.WindowsAzure.Storage：连接被拒绝。System.Net.Http：连接被拒绝。System.Private.CoreLib：连接被拒绝。
+    ````
+
+    检查 Azurite 是否正在运行，并且您已将“local.settings.json”文件中的“AzureWebJobsStorage”设置为“UseDevelopmentStorage=true”。
+
+* 如果您收到以下错误：
+
+    ````输出
+    System.Private.CoreLib：执行函数时出现异常：Functions.iot-hub-trigger。System.Private.CoreLib：结果：失败异常：AttributeError：“list”对象没有属性“get_body”
+    ````
+
+    检查您是否已将“function.json”文件中的“cardinality”设置为“one”。
+
+* 如果您收到以下错误：
+
+    ````输出
+    Azure.Messaging.EventHubs：事件中心的路径可以指定为连接字符串的一部分或单独的值，但不能同时指定为两者。如果您传递显式事件中心名称，请验证您的连接字符串没有“EntityPath”令牌。（参数“连接字符串”）。
+    ````
+
+    检查您是否已将“function.json”文件中的“eventHubName”设置为空字符串。
+
+## 从无服务器代码发送直接方法请求
+
+到目前为止，您的 Functions 应用程序正在使用事件中心兼容端点侦听来自 IoT 中心的消息。您现在需要向 IoT 设备发送命令。这是通过*注册表管理器*使用与 IoT 中心的不同连接来完成的。注册表管理器是一个工具，可让您查看哪些设备已在 IoT 中心注册，并通过发送云到设备消息、直接方法请求或更新设备孪生来与这些设备进行通信。您还可以使用它从 IoT 中心注册、更新或删除 IoT 设备。
+
+要连接到注册表管理器，您需要一个连接字符串。
+
+### 任务 - 获取注册表管理器连接字符串
+
+1. 要获取连接字符串，请运行以下命令：
+
+    ````嘘
+    az iot hub 连接字符串显示 --policy-name 服务 \
+                                      --输出表\
+                                      --集线器名称
+       
+    ````
+
+
+
+
+
+
+## 🚀 挑战 
+
+在上一课中，您通过在中继开启时以及中继关闭后的一小段时间内取消订阅 MQTT 消息来管理中继的时间。您不能在此处使用此方法 - 您无法取消订阅 IoT 中心触发器。考虑在 Functions 应用程序中处理此问题的不同方法。
+
+## 课后测验 
+[课后测验](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/18) 
+
+## 复习和自学 
+
+* 阅读 [无服务器计算] 上的无服务器计算Wikipedia 页面](https://wikipedia.org/wiki/Serverless_computing) 
+* 了解如何在 Azure 中使用无服务器，包括 [Go serverless for your IoT need Azure blog post](https://azure.microsoft. com/blog/go-serverless-for-your-iot-needs/?WT.mc_id=academic-17441-jabenn) 
+* 在 [Azure Functions YouTube 频道](https://www.youtube.com) 上了解有关 Azure Functions 的更多信息。 com/c/AzureFunctions) 
+
+## 作业
+[添加手动继电器控制](../assignment.md)
+                        
+                       
+                      
+                     
+                    
+                   
+                  
+                 
+                
+               
+              
+             
+            
+           
+          
+         
+        
+       
+      
+     
+    
+   
