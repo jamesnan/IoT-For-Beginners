@@ -5,7 +5,7 @@
 
 > [Nitya Narasimhan](https://github.com/nitya) 的草图笔记。单击图像可查看更大的版本。
 
-本课程是 [Microsoft Reactor](https://developer.microsoft.com) 的 [IoT 初学者项目 2 - 数字农业系列](https://youtube.com/playlist?list=PLmsFUfdnGr3yCutmcVg6eAUEfsGiFXgcx) 的一部分/reactor/?WT.mc_id=academic-17441-jabenn)。
+本课程是 [Microsoft Reactor](https://developer.microsoft.com/reactor/?WT.mc_id=academic-17441-jabenn) 的 [IoT 初学者项目 2 - 数字农业系列](https://youtube.com/playlist?list=PLmsFUfdnGr3yCutmcVg6eAUEfsGiFXgcx) 的一部分。
 
 [![物联网驱动的自动化植物浇水](https://img.youtube.com/vi/g9FfZwv9R58/0.jpg)](https://youtu.be/g9FfZwv9R58)
 
@@ -13,7 +13,7 @@
 
 [课前测验](https://black-meadow-040d15503.1.azurestaticapps.net/quiz/13)
 
-＃＃ 介绍
+## 介绍
 
 在上一课中，您学习了如何监测土壤湿度。在本课程中，您将学习如何构建响应土壤湿度的自动浇水系统的核心组件。您还将了解计时 - 传感器如何需要一段时间来响应变化，以及执行器如何需要时间来改变传感器测量的属性。
 
@@ -99,19 +99,19 @@
 
 ### 任务 - 通过 MQTT 控制中继
 
-1. 将相关的 MQTT 库/pip 包和代码添加到“soil-moisture-sensor”项目中以连接到 MQTT。将客户端 ID 命名为“soilmoisturesensor_client”，并加上您的 ID 前缀。
+1. 将相关的 MQTT 库/pip 包和代码添加到 `soil-moisture-sensor` 项目中以连接到 MQTT。将客户端 ID 命名为 `soilmoisturesensor_client` ，并加上您的 ID 前缀。
 
     > ⚠️需要的可以参考【项目1第4课连接MQTT的说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md#将您的物联网设备连接到 mqtt）。
 
-1. 添加相关设备代码以发送带有土壤湿度设置的遥测数据。对于遥测消息，将属性命名为“soil_moisture”。
+1. 添加相关设备代码以发送带有土壤湿度设置的遥测数据。对于遥测消息，将属性命名为 `soil_moisture` 。
 
     > ⚠️ 需要的话可以参考【项目1第4课中发送遥测到MQTT的说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md #从您的物联网设备发送遥测）。
 
-1. 创建一些本地服务器代码来订阅遥测并发送命令来控制名为“soil-moisture-sensor-server”的文件夹中的继电器。在命令消息中将该属性命名为“relay_on”，并将客户端 ID 设置为“soilmoisturesensor_server”，并以您的 ID 为前缀。保持与您为第 4 课项目 1 编写的服务器代码相同的结构，因为您将在本课稍后添加到此代码中。
+1. 创建一些本地服务器代码来订阅遥测并发送命令来控制名为   `soil-moisture-sensor-server` 的文件夹中的继电器。在命令消息中将该属性命名为  `relay_on` ，并将客户端 ID 设置为 `soilmoisturesensor_server` ，并以您的 ID 为前缀。保持与您为第 4 课项目 1 编写的服务器代码相同的结构，因为您将在本课稍后添加到此代码中。
 
     > ⚠️可以参考【MQTT发送遥测数据说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md#write-the-server-code ）和项目中的[通过 MQTT 发送命令](../../../../1-getting-started/lessons/4-connect-internet/README.md#send-commands-to-the-mqtt-broker) 1、第 4 课（如果需要）。
 
-1. 使用消息中的“relay_on”属性添加相关设备代码以根据接收到的命令控制继电器。如果 `soil_moisture` 大于 450，则发送 `relay_on` 为 true，否则发送 false，与您之前为 IoT 设备添加的逻辑相同。
+1. 使用消息中的`relay_on` 属性添加相关设备代码以根据接收到的命令控制继电器。如果 `soil_moisture` 大于 450，则发送 `relay_on` 为 true，否则发送 false，与您之前为 IoT 设备添加的逻辑相同。
 
     > ⚠️如有需要，可以参考【项目1第4课中MQTT响应命令说明】(../../../../1-getting-started/lessons/4-connect-internet/README. md#handle-commands-on-the-iot-device）。
 
@@ -121,7 +121,7 @@
 
 ## 传感器和执行器时序
 
-回到第 3 课，您构建了一个夜灯 - 一种 LED，一旦光传感器检测到弱光，它就会打开。光传感器立即检测到光照水平的变化，并且设备能够快速响应，仅受“loop”函数或“while True:”循环中的延迟长度的限制。作为物联网开发人员，您不能总是依赖如此快速的反馈循环。
+回到第 3 课，您构建了一个夜灯 - 一种 LED，一旦光传感器检测到弱光，它就会打开。光传感器立即检测到光照水平的变化，并且设备能够快速响应，仅受 `loop` 函数或`while True:` 循环中的延迟长度的限制。作为物联网开发人员，您不能总是依赖如此快速的反馈循环。
 
 ### 土壤湿度的时间
 
@@ -177,9 +177,9 @@
 1. 收到遥测消息
 1.检查土壤湿度
 1. 如果没问题，什么也不做。如果读数太高（意味着土壤湿度太低），则：
-    1.发送命令打开继电器
-    1.等待5秒
-    1.发送命令关闭继电器
+    1. 发送命令打开继电器
+    1. 等待5秒
+    1. 发送命令关闭继电器
     1. 等待 20 秒，让土壤湿度稳定
 
 浇水周期，即从接收遥测消息到准备再次处理土壤湿度水平的过程，大约需要 25 秒。我们每 10 秒发送一次土壤湿度水平，因此在服务器等待土壤湿度水平稳定时接收消息的位置会存在重叠，这可能会启动另一个浇水周期。
@@ -199,79 +199,79 @@
 
 1. 如果尚未打开，请在 VS Code 中打开 `soil-moisture-sensor-server` 文件夹。确保虚拟环境已激活。
 
-1.打开 `app.py` 文件
+1. 打开 `app.py` 文件
 
-1. 将以下代码添加到现有导入下方的“app.py”文件中：
+1. 将以下代码添加到现有导入下方的 `app.py` 文件中：
 
-    ````蟒蛇
-    导入线程
-    ````
+    ```python
+    import threading
+    ```
 
-    该语句从Python库中导入“threading”，线程允许Python在等待时执行其他代码。
+    该语句从Python库中导入 `threading` ，线程允许Python在等待时执行其他代码。
 
-1. 在处理服务器代码接收到的遥测消息的“handle_telemetry”函数之前添加以下代码：
+1. 在处理服务器代码接收到的遥测消息的 `handle_telemetry` 函数之前添加以下代码：
 
-    ````蟒蛇
-    浇水时间 = 5
-    等待时间=20
-    ````
+    ```python
+    water_time = 5
+    wait_time = 20
+    ```
 
-    这定义了继电器运行多长时间（“water_time”），以及之后等待多长时间检查土壤湿度（“wait_time”）。
+    这定义了继电器运行多长时间（`water_time` ），以及之后等待多长时间检查土壤湿度（`wait_time` ）。
 
 1. 在此代码下方添加以下内容：
 
-    ````蟒蛇
-    def send_relay_command（客户端，状态）：
-        命令 = { 'relay_on' : 状态 }
-        print("发送消息：", 命令)
-        client.publish(server_command_topic, json.dumps(命令))
-    ````
+    ```python
+    def send_relay_command(client, state):
+        command = { 'relay_on' : state }
+        print("Sending message:", command)
+        client.publish(server_command_topic, json.dumps(command))
+    ```
 
-    此代码定义了一个名为“send_relay_command”的函数，该函数通过 MQTT 发送命令来控制继电器。遥测数据创建为字典，然后转换为 JSON 字符串。传递到“state”的值确定继电器应该打开还是关闭。
+    此代码定义了一个名为 `send_relay_command` 的函数，该函数通过 MQTT 发送命令来控制继电器。遥测数据创建为字典，然后转换为 JSON 字符串。传递到 `state` 的值确定继电器应该打开还是关闭。
 
 1. 在 `send_relay_code` 函数后面添加以下代码：
 
-    ````蟒蛇
-    def control_relay(客户端):
-        print("取消订阅遥测")
+    ```python
+    def control_relay(client):
+        print("Unsubscribing from telemetry")
         mqtt_client.unsubscribe(client_telemetry_topic)
     
-        send_relay_command（客户端，True）
-        时间.睡眠(water_time)
-        send_relay_command（客户端，假）
+        send_relay_command(client, True)
+        time.sleep(water_time)
+        send_relay_command(client, False)
     
-        时间.睡眠（等待时间）
+        time.sleep(wait_time)
     
-        print("订阅遥测")
+        print("Subscribing to telemetry")
         mqtt_client.subscribe(client_telemetry_topic)
     ````
 
-    这定义了一个根据所需时序控制继电器的函数。首先取消订阅遥测，以便在浇水时不会处理土壤湿度消息。接下来，它发送一条命令来打开继电器。然后，它会等待“water_time”，然后发送关闭继电器的命令。最后，它等待土壤湿度稳定“wait_time”秒。然后它重新订阅遥测。
+    这定义了一个根据所需时序控制继电器的函数。首先取消订阅遥测，以便在浇水时不会处理土壤湿度消息。接下来，它发送一条命令来打开继电器。然后，它会等待 `water_time` ，然后发送关闭继电器的命令。最后，它等待土壤湿度稳定`wait_time`  秒。然后它重新订阅遥测。
 
 1. 将 `handle_telemetry` 函数更改为以下内容：
 
-    ````蟒蛇
-    defhandle_telemetry（客户端，用户数据，消息）：
-        有效负载 = json.loads(message.payload.decode())
-        print("收到消息：", 负载)
+    ```python
+    def handle_telemetry(client, userdata, message):
+        payload = json.loads(message.payload.decode())
+        print("Message received:", payload)
     
-        如果有效负载['soil_moisture'] > 450：
+        if payload['soil_moisture'] > 450:
             threading.Thread(target=control_relay, args=(client,)).start()
-    ````
+    ```
 
-    该代码检查土壤湿度。如果大于 450，则土壤需要浇水，因此调用“control_relay”函数。该函数在单独的线程上运行，在后台运行。
+    该代码检查土壤湿度。如果大于 450，则土壤需要浇水，因此调用`control_relay` 函数。该函数在单独的线程上运行，在后台运行。
 
 1. 确保您的 IoT 设备正在运行，然后运行此代码。改变土壤湿度并观察继电器发生的情况 - 它应该打开 5 秒，然后保持关闭至少 20 秒，仅在土壤湿度不足时才打开。
 
-    ````输出
-    (.venv) ➜ 土壤湿度传感器服务器 ✗ python app.py
-    收到消息：{'soil_moisture': 457}
-    取消订阅遥测
-    发送消息：{'relay_on': True}
-    发送消息：{'relay_on': False}
-    订阅遥测
-    收到消息：{'soil_moisture': 302}
-    ````
+    ```output
+    (.venv) ➜  soil-moisture-sensor-server ✗ python app.py
+    Message received: {'soil_moisture': 457}
+    Unsubscribing from telemetry
+    Sending message: {'relay_on': True}
+    Sending message: {'relay_on': False}
+    Subscribing to telemetry
+    Message received: {'soil_moisture': 302}
+    ```
 
     在模拟灌溉系统中测试这一点的一个好方法是使用干燥的土壤，然后在继电器打开时手动倒入水，当继电器关闭时停止浇注。
 
@@ -298,6 +298,6 @@
 
 * 在 [中继维基百科页面](https://wikipedia.org/wiki/Relay) 上了解有关中继的更多信息，包括其在电话交换机中的历史使用。
 
-## 任务
+## 作业
 
 [建立更高效的浇水循环](../assignment.md)
