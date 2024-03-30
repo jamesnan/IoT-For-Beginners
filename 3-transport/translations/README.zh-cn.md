@@ -15,10 +15,10 @@
 
 ＃＃ 主题
 
-1. [位置追踪](lessons/1-location-tracking/translations/README.zh-cn.md)
-1. [存储位置数据](lessons/2-store-location-data/translations/README.zh-cn.md)
-1. [可视化位置数据](lessons/3-visualize-location-data/translations/README.zh-cn.md)
-1. [地理围栏](lessons/4-geofences/translations/README.zh-cn.md)
+1. [位置追踪](../lessons/1-location-tracking/translations/README.zh-cn.md)
+1. [存储位置数据](../lessons/2-store-location-data/translations/README.zh-cn.md)
+1. [可视化位置数据](../lessons/3-visualize-location-data/translations/README.zh-cn.md)
+1. [地理围栏](../lessons/4-geofences/translations/README.zh-cn.md)
 
 ## 学分
 
