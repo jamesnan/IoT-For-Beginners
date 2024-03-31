@@ -20,7 +20,7 @@
 * [架构复杂的物联网应用程序](#architect-complex-iot-applications)
 * [设计水果质量控制系统](#design-a-fruit-quality-control-system)
 * [通过传感器触发水果质量检查](#trigger-fruit-quality-checking-from-a-sensor)
-* [用于水果质量检测器的数据](#data-used-for-a-fruit-quality- detector)
+* [用于水果质量检测器的数据](#data-used-for-a-fruit-quality-detector)
 * [使用开发者设备模拟多个物联网设备](#using-developer-devices-to-simulate-multiple-iot-devices)
 * [转向生产](#转向生产)
 
