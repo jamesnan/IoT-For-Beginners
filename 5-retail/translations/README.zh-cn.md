@@ -12,8 +12,8 @@
 
 ## 主题
 
-1. [训练股票检测器](../lessons/1-train-stock-detector/README.md)
-2. [从物联网设备检查库存](../lessons/2-check-stock-device/README.md)
+1. [训练股票检测器](../lessons/1-train-stock-detector/translations/README.zh-cn.md)
+2. [从物联网设备检查库存](../lessons/2-check-stock-device/translations/README.zh-cn.md)
 
 ## 学分
 
