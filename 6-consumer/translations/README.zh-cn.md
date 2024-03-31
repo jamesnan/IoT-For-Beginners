@@ -13,10 +13,10 @@
 
 ＃＃ 主题
 
-1. [使用物联网设备识别语音](../lessons/1-speech-recognition/translation/REAME.zh-cn.me)
-1. [理解语言](../lessons/2-language-understanding/translation/REAME.zh-cn.me)
-1. [设置计时器并提供口头反馈](../lessons/3-spoken-feedback/translation/REAME.zh-cn.me)
-1. [支持多种语言](../lessons/4-multiple-language-support/translation/REAME.zh-cn.me)
+1. [使用物联网设备识别语音](../lessons/1-speech-recognition/translations/REAME.zh-cn.me)
+1. [理解语言](../lessons/2-language-understanding/translations/REAME.zh-cn.me)
+1. [设置计时器并提供口头反馈](../lessons/3-spoken-feedback/translations/REAME.zh-cn.me)
+1. [支持多种语言](../lessons/4-multiple-language-support/translations/REAME.zh-cn.me)
 
 ## 学分
 
