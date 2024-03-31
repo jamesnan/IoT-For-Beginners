@@ -7,7 +7,7 @@
 
 本视频概述了 Azure 语音服务，涵盖了早期课程中的语音转文本和文本转语音，以及翻译语音（本课程涵盖的主题）：
 
-[![使用 Microsoft Build 2020 中的几行 Python 识别语音](https://img.youtube.com/vi/h6xbpMPSGEA/0.jpg)](https://www.youtube.com/watch?v =h6xbpMPSGEA)
+[![使用 Microsoft Build 2020 中的几行 Python 识别语音](https://img.youtube.com/vi/h6xbpMPSGEA/0.jpg)](https://www.youtube.com/watch?v=h6xbpMPSGEA)
 
 > 🎥 点击上图观看视频
 
