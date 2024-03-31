@@ -135,7 +135,7 @@
 
 1. 按照 Microsoft 文档上构建对象检测器快速入门的[上传和标记图像部分](https://docs.microsoft.com/azure/cognitive-services/custom-vision-service/get-started-build-detector?WT.mc_id=academic-17441-jabenn#upload-and-tag-images) 上传您的训练图像。根据您要检测的对象类型创建相关标签。
 
-    ![显示上传成熟和未成熟香蕉图片的上传对话框](../../../../images/image-upload-object- detector.png)
+    ![显示上传成熟和未成熟香蕉图片的上传对话框](../../../../images/image-upload-object-detector.png)
 
     当您为对象绘制边界框时，请使边界框保持良好且紧密地围绕对象。勾勒出所有图像的轮廓可能需要一段时间，但该工具会检测它认为的边界框，从而加快速度。
 
