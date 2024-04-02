@@ -11,6 +11,7 @@ led = GroveLed(5)
 
 id = '1234567890'
 
+client_name = id + 'nightlight_client'
 # mqtt_client = mqtt.Client(client_name)
 mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
 mqtt_client.connect('test.mosquitto.org')
