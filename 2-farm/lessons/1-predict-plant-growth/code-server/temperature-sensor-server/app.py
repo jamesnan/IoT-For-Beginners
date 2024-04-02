@@ -7,13 +7,14 @@ from os import path
 import csv
 from datetime import datetime
 
-id = '<ID>'
+id = '1234567890'
 
 client_telemetry_topic = id + '/telemetry'
 server_command_topic = id + '/commands'
 client_name = id + 'temperature_sensor_server'
 
-mqtt_client = mqtt.Client(client_name)
+# mqtt_client = mqtt.Client(client_name)
+mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
 mqtt_client.connect('test.mosquitto.org')
 
 mqtt_client.loop_start()

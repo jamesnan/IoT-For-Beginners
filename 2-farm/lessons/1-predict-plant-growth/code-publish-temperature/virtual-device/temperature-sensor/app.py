@@ -8,12 +8,13 @@ import json
 
 sensor = DHT("11", 5)
 
-id = '<ID>'
+id = '1234567890'
 
 client_telemetry_topic = id + '/telemetry'
 client_name = id + 'temperature_sensor_client'
 
-mqtt_client = mqtt.Client(client_name)
+# mqtt_client = mqtt.Client(client_name)
+mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
 mqtt_client.connect('test.mosquitto.org')
 
 mqtt_client.loop_start()
@@ -28,4 +29,5 @@ while True:
 
     mqtt_client.publish(client_telemetry_topic, telemetry)
 
-    time.sleep(10 * 60)
+    #time.sleep(10 * 60)
+    time.sleep(10)
