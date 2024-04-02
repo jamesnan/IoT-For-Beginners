@@ -10,12 +10,14 @@ CounterFitConnection.init('127.0.0.1', 5000)
 light_sensor = GroveLightSensor(0)
 led = GroveLed(5)
 
-id = '<ID>'
+id = '1234567890'
 
 client_telemetry_topic = id + '/telemetry'
 client_name = id + 'nightlight_client'
 
-mqtt_client = mqtt.Client(client_name)
+# mqtt_client = mqtt.Client(client_name)
+mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
+
 mqtt_client.connect('test.mosquitto.org')
 
 mqtt_client.loop_start()

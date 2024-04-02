@@ -23,5 +23,6 @@
         "photodiodes",
         "quickstart",
         "sketchnote"
-    ]
+    ],
+    "python.pythonPath": "D:\\nightlight\\.venv\\Scripts\\python.exe"
 }

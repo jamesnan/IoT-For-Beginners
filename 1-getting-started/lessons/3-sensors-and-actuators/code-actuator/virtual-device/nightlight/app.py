@@ -14,7 +14,8 @@ while True:
 
     if light < 300:
         led.on()
+        print("Led on")
     else:
         led.off()
-    
+        print("Led off")
     time.sleep(1)
