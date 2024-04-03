@@ -10,13 +10,14 @@ import paho.mqtt.client as mqtt
 adc = ADC()
 relay = GroveRelay(5)
 
-id = '<ID>'
 
 client_telemetry_topic = id + '/telemetry'
 server_command_topic = id + '/commands'
 client_name = id + 'soilmoisturesensor_client'
 
-mqtt_client = mqtt.Client(client_name)
+# mqtt_client = mqtt.Client(client_name)
+mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
+
 mqtt_client.connect('test.mosquitto.org')
 
 mqtt_client.loop_start()

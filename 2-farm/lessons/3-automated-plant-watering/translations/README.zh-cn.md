@@ -101,19 +101,19 @@
 
 1. 将相关的 MQTT 库/pip 包和代码添加到 `soil-moisture-sensor` 项目中以连接到 MQTT。将客户端 ID 命名为 `soilmoisturesensor_client` ，并加上您的 ID 前缀。
 
-    > ⚠️需要的可以参考【项目1第4课连接MQTT的说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md#将您的物联网设备连接到 mqtt）。
+    > ⚠️需要的可以参考[项目1第4课 将您的物联网设备连接到mqtt的说明](../../../../1-getting-started/lessons/4-connect-internet/README.md#connect-your-iot-device-to-mqtt) 。
 
 1. 添加相关设备代码以发送带有土壤湿度设置的遥测数据。对于遥测消息，将属性命名为 `soil_moisture` 。
 
-    > ⚠️ 需要的话可以参考【项目1第4课中发送遥测到MQTT的说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md #从您的物联网设备发送遥测）。
+    > ⚠️ 需要的话可以参考[项目1第4课中 从您的物联网设备发送遥测到MQTT的说明](../../../../1-getting-started/lessons/4-connect-internet/README.md#send-telemetry-from-your-iot-device) 。
 
 1. 创建一些本地服务器代码来订阅遥测并发送命令来控制名为   `soil-moisture-sensor-server` 的文件夹中的继电器。在命令消息中将该属性命名为  `relay_on` ，并将客户端 ID 设置为 `soilmoisturesensor_server` ，并以您的 ID 为前缀。保持与您为第 4 课项目 1 编写的服务器代码相同的结构，因为您将在本课稍后添加到此代码中。
 
-    > ⚠️可以参考【MQTT发送遥测数据说明】(../../../../1-getting-started/lessons/4-connect-internet/README.md#write-the-server-code ）和项目中的[通过 MQTT 发送命令](../../../../1-getting-started/lessons/4-connect-internet/README.md#send-commands-to-the-mqtt-broker) 1、第 4 课（如果需要）。
+    > ⚠️ 如果需要可以参考[MQTT发送遥测数据说明](../../../../1-getting-started/lessons/4-connect-internet/README.md#write-the-server-code)）和第 4 课 项目 1 中的[通过 MQTT 发送命令](../../../1-getting-started/lessons/4-connect-internet/README.md#send-commands-to-the-mqtt-broker)）。
 
 1. 使用消息中的`relay_on` 属性添加相关设备代码以根据接收到的命令控制继电器。如果 `soil_moisture` 大于 450，则发送 `relay_on` 为 true，否则发送 false，与您之前为 IoT 设备添加的逻辑相同。
 
-    > ⚠️如有需要，可以参考【项目1第4课中MQTT响应命令说明】(../../../../1-getting-started/lessons/4-connect-internet/README. md#handle-commands-on-the-iot-device）。
+    > ⚠️如有需要，可以参考[项目1第4课中MQTT响应命令说明](../../../../1-getting-started/lessons/4-connect-internet/README.md#handle-commands-on-the-iot-device)。
 
 > 💁 您可以在 [code-mqtt](./code-mqtt) 文件夹中找到此代码。
 
@@ -277,7 +277,7 @@
 
 > 💁 您可以在 [code-timing](../../code-timing) 文件夹中找到此代码。
 
-> 💁 如果你想用水泵搭建一个真正的灌溉系统，那么你可以使用【6V水泵】(https://www.seeedstudio.com/6V-Mini-Water-Pump-p-1945.html ）配有[USB端子电源](https://www.adafruit.com/product/3628)。确保泵的电源是通过继电器连接的。
+> 💁 如果你想用水泵搭建一个真正的灌溉系统，那么你可以使用[6V水泵](https://www.seeedstudio.com/6V-Mini-Water-Pump-p-1945.html) 配有[USB端子电源](https://www.adafruit.com/product/3628)。确保泵的电源是通过继电器连接的。
 
 ---
 
