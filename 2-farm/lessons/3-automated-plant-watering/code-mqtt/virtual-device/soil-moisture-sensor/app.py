@@ -10,6 +10,7 @@ import paho.mqtt.client as mqtt
 adc = ADC()
 relay = GroveRelay(5)
 
+id = '1234567890'
 
 client_telemetry_topic = id + '/telemetry'
 server_command_topic = id + '/commands'

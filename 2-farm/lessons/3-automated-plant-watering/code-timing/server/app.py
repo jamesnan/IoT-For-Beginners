@@ -17,7 +17,7 @@ mqtt_client.connect('test.mosquitto.org')
 mqtt_client.loop_start()
 
 water_time = 5
-wait_time = 20
+wait_time = 2
 
 def send_relay_command(client, state):
     command = { 'relay_on' : state }
