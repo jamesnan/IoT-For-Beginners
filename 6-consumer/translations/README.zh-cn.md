@@ -11,7 +11,7 @@
 
 > 💁 这些课程将使用一些云资源。如果您没有完成此项目中的所有课程，请确保[清理您的项目](../../clean-up.md)。
 
-＃＃ 主题
+## 主题
 
 1. [使用物联网设备识别语音](../lessons/1-speech-recognition/translations/README.zh-cn.md)
 1. [理解语言](../lessons/2-language-understanding/translations/README.zh-cn.md)
